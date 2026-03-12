@@ -1,0 +1,176 @@
+"use client";
+
+import { OrganizationSwitcher, SignInButton, UserButton } from "@clerk/nextjs";
+import { Dumbbell, Menu } from "lucide-react";
+import Link from "next/link";
+import * as React from "react";
+import { Show } from "@/components/auth/Show";
+import { Button } from "@/components/ui/button";
+import {
+    NavigationMenu,
+    NavigationMenuItem,
+    NavigationMenuLink,
+    NavigationMenuList,
+    navigationMenuTriggerStyle,
+} from "@/components/ui/navigation-menu";
+import {
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+} from "@/components/ui/sheet";
+
+export function Navbar() {
+  const [isOpen, setIsOpen] = React.useState(false);
+
+  const NavLinks = () => (
+    <>
+      <NavigationMenuItem>
+        <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+          <Link href="/">Home</Link>
+        </NavigationMenuLink>
+      </NavigationMenuItem>
+      <Show when="signedIn">
+        <NavigationMenuItem>
+          <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+            <Link href="/tracker">Tracker</Link>
+          </NavigationMenuLink>
+        </NavigationMenuItem>
+        <NavigationMenuItem>
+          <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+            <Link href="/inventory">Inventory</Link>
+          </NavigationMenuLink>
+        </NavigationMenuItem>
+        <NavigationMenuItem>
+          <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+            <Link href="/settings">Settings</Link>
+          </NavigationMenuLink>
+        </NavigationMenuItem>
+      </Show>
+    </>
+  );
+
+  return (
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-8">
+        {/* Brand */}
+        <div className="flex items-center gap-2">
+          <Dumbbell className="h-6 w-6 text-primary" />
+          <Link
+            href="/"
+            className="font-bold text-lg text-primary tracking-tight"
+          >
+            Sports Tracker
+          </Link>
+        </div>
+
+        {/* Desktop Nav */}
+        <div className="hidden md:flex items-center gap-6">
+          <NavigationMenu>
+            <NavigationMenuList>
+              <NavLinks />
+            </NavigationMenuList>
+          </NavigationMenu>
+
+          <div className="flex items-center gap-2 ml-4">
+            <Show when="signedOut">
+              <SignInButton mode="modal">
+                <Button variant="default" size="sm">
+                  Sign In
+                </Button>
+              </SignInButton>
+            </Show>
+            <Show when="signedIn">
+              <OrganizationSwitcher
+                appearance={{
+                  elements: {
+                    organizationSwitcherTrigger:
+                      "focus:ring-0 focus:ring-offset-0",
+                  },
+                }}
+              />
+              <UserButton />
+            </Show>
+          </div>
+        </div>
+
+        {/* Mobile Nav */}
+        <div className="flex md:hidden items-center gap-4">
+          <Show when="signedOut">
+            <SignInButton mode="modal">
+              <Button variant="default" size="sm">
+                Sign In
+              </Button>
+            </SignInButton>
+          </Show>
+          <Show when="signedIn">
+            <OrganizationSwitcher
+              hidePersonal={false}
+              appearance={{
+                elements: {
+                  organizationSwitcherTrigger:
+                    "focus:ring-0 focus:ring-offset-0",
+                },
+              }}
+            />
+            <UserButton />
+          </Show>
+
+          <Sheet open={isOpen} onOpenChange={setIsOpen}>
+            <SheetTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="px-0 text-base hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
+              >
+                <Menu className="h-6 w-6" />
+                <span className="sr-only">Toggle Menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="pr-0">
+              <SheetHeader>
+                <SheetTitle className="text-left font-bold text-primary flex items-center gap-2">
+                  <Dumbbell className="h-5 w-5" />
+                  Sports Tracker
+                </SheetTitle>
+              </SheetHeader>
+              <div className="my-8 flex flex-col gap-4 text-sm">
+                <Link
+                  href="/"
+                  onClick={() => setIsOpen(false)}
+                  className="hover:text-primary pl-1 font-medium"
+                >
+                  Home
+                </Link>
+                <Show when="signedIn">
+                  <Link
+                    href="/tracker"
+                    onClick={() => setIsOpen(false)}
+                    className="hover:text-primary pl-1 font-medium"
+                  >
+                    Tracker
+                  </Link>
+                  <Link
+                    href="/inventory"
+                    onClick={() => setIsOpen(false)}
+                    className="hover:text-primary pl-1 font-medium"
+                  >
+                    Inventory
+                  </Link>
+                  <Link
+                    href="/settings"
+                    onClick={() => setIsOpen(false)}
+                    className="hover:text-primary pl-1 font-medium"
+                  >
+                    Settings
+                  </Link>
+                </Show>
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
+      </div>
+    </header>
+  );
+}
