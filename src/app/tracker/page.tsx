@@ -21,7 +21,7 @@ export default async function TrackerPage({ searchParams }: PageProps) {
   const [activeRentals, completedRentals, equipment, guests, settings] =
     await Promise.all([
       getActiveRentals(),
-      getCompletedRentals(50, 0, tzStr, dateStr),
+      getCompletedRentals(55, 0, tzStr, dateStr),
       getAllEquipment(),
       getAllGuests(),
       getSettings(),
