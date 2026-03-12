@@ -48,8 +48,7 @@ export async function getCompletedRentals(
         AND t.org_id = ${orgId}
         AND (t.checked_in_at AT TIME ZONE 'UTC' AT TIME ZONE ${timezone})::date = ${date}::date
       ORDER BY t.checked_in_at DESC
-      LIMIT ${limit} OFFSET ${offset}
-    `;
+        `;
     return res.rows as Transaction[];
   }
 

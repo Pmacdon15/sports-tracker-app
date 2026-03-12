@@ -46,9 +46,14 @@ export function TrackerTabs({
   const [checkoutUnit, setCheckoutUnit] = React.useState("");
   const [checkoutType, setCheckoutType] = React.useState("Raft");
   const [searchTerm, setSearchTerm] = React.useState("");
-  const [selectedDate, setSelectedDate] = React.useState(
-    initialDate || new Date().toISOString().split("T")[0],
-  );
+  const [selectedDate, setSelectedDate] = React.useState(() => {
+    if (initialDate) return initialDate;
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  });
 
   const guestOptions = guests.map((g: any) => ({
     label: g.name,
