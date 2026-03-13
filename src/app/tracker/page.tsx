@@ -1,31 +1,29 @@
-import { TimezoneRedirect } from "@/components/auth/TimezoneRedirect";
+import { Suspense } from "react";
 import { TrackerTabs } from "@/components/forms/TrackerTabs";
+import ActiveTab from "@/components/tabs/active";
 import { getAllEquipment } from "@/data/equipment";
 import { getAllGuests } from "@/data/guests";
 import { getSettings } from "@/data/settings";
 import { getActiveRentals, getCompletedRentals } from "@/data/transactions";
 
-interface PageProps {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-}
+export default function TrackerPage(props: PageProps<"/tracker">) {
+  const rentalsPromise = getActiveRentals();
+  const completedRentalsPromise = props.searchParams.then((params) => {
+    const tzStr = Array.isArray(params.timezone)
+      ? params.timezone[0]
+      : params.timezone;
+    const dateStr = Array.isArray(params.date) ? params.date[0] : params.date;
 
-export default async function TrackerPage({ searchParams }: PageProps) {
-  const { timezone, date } = await searchParams;
-  const tzStr = Array.isArray(timezone) ? timezone[0] : timezone;
-  const dateStr = Array.isArray(date) ? date[0] : date;
+    return getCompletedRentals(55, 0, tzStr, dateStr);
+  });
 
-  if (!tzStr) {
-    return <TimezoneRedirect />;
-  }
+  const dateStringPromise = props.searchParams.then((params) => {
+    return Array.isArray(params.date) ? params.date[0] : params.date;
+  });
 
-  const [activeRentals, completedRentals, equipment, guests, settings] =
-    await Promise.all([
-      getActiveRentals(),
-      getCompletedRentals(55, 0, tzStr, dateStr),
-      getAllEquipment(),
-      getAllGuests(),
-      getSettings(),
-    ]);
+  const guestsPromise = getAllGuests();
+  const equipmentPromise = getAllEquipment();
+  const settingsPromise = getSettings();
 
   return (
     <div className="container mx-auto py-8 px-4 flex-1 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -41,13 +39,18 @@ export default async function TrackerPage({ searchParams }: PageProps) {
       </div>
 
       <TrackerTabs
-        activeRentals={activeRentals}
-        completedRentals={completedRentals}
-        equipment={equipment}
-        guests={guests}
-        settings={settings}
-        timezone={tzStr}
-        initialDate={dateStr}
+        activeTab={
+          <Suspense>
+            <ActiveTab
+              rentalsPromise={rentalsPromise}
+              settingsPromise={settingsPromise}
+            />
+          </Suspense>
+        }
+        completedRentalsPromise={completedRentalsPromise}
+        equipmentPromise={equipmentPromise}
+        guestsPromise={guestsPromise}
+        initialDatePromise={dateStringPromise}
       />
     </div>
   );
