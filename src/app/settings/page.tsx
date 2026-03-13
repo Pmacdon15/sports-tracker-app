@@ -1,8 +1,10 @@
+import { Suspense } from "react";
+import SettingsFallback from "@/components/fallbacks/settings-fallback";
 import { getSettings } from "@/data/settings";
 import { SettingsForm } from "./client";
 
-export default async function SettingsPage() {
-  const settings = await getSettings();
+export default function SettingsPage() {
+  const settingsPromise = getSettings();
 
   return (
     <div className="container mx-auto py-8 px-4 flex-1 max-w-2xl animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -14,8 +16,9 @@ export default async function SettingsPage() {
           Configure application wide triggers and intervals.
         </p>
       </div>
-
-      <SettingsForm initialSettings={settings} />
+      <Suspense fallback={<SettingsFallback />}>
+        <SettingsForm initialSettingsPromise={settingsPromise} />
+      </Suspense>
     </div>
   );
 }
