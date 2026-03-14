@@ -47,7 +47,7 @@ export async function getCompletedRentalsDb(
     WHERE t.status = 'RETURNED' 
       AND t.org_id = ${orgId}
       -- Compare against our resolved targetDate
-      AND (t.checked_in_at AT TIME ZONE ${timezone})::date = ${targetDate}::date
+      AND (t.checked_in_at AT TIME ZONE 'UTC' AT TIME ZONE ${timezone})::date = ${targetDate}::date
     ORDER BY t.checked_in_at DESC
   `;
 
