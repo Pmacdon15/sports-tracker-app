@@ -1,27 +1,11 @@
 import { auth } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
 import { FeatureList } from "@/components/experimental/feature-list";
 import { getExperimentalFeatures } from "@/dal/experimental";
 
 export default async function ExperimentalPage() {
-  const { has, orgId } = await auth();
+  const { has } = await auth.protect();
 
-  if (!orgId) {
-    redirect("/");
-  }
-
-  // Check if plan is not free
-  // Assuming 'org:premium' or similar is used for non-free accounts
-  // The user mentioned using 'has' to see if subscription plan is not free
-  const isNotFree =
-    has({ permission: "org:subscription:manage" }) ||
-    has({ role: "org:admin" });
-
-  if (!isNotFree) {
-    redirect("/");
-  }
-
-  const isAdmin = has({ role: "org:admin" });
+  const hasFreeAccess = has({ plan: "free" });
 
   const result = await getExperimentalFeatures();
 
@@ -35,7 +19,19 @@ export default async function ExperimentalPage() {
       </div>
     );
   }
-
+  if (hasFreeAccess)
+    return (
+      <div className="container mx-auto py-10 max-w-4xl">
+        <div className="flex flex-col gap-2 mb-8">
+          <h1 className="text-3xl font-bold tracking-tight text-primary">
+            Experimental Features
+          </h1>
+          <p className="text-muted-foreground">
+            Please sign up for a subscription to see use these features.
+          </p>
+        </div>
+      </div>
+    );
   return (
     <div className="container mx-auto py-10 max-w-4xl">
       <div className="flex flex-col gap-2 mb-8">
@@ -48,7 +44,7 @@ export default async function ExperimentalPage() {
         </p>
       </div>
 
-      <FeatureList initialFeatures={result.data || []} isAdmin={isAdmin} />
+      <FeatureList initialFeatures={result.data || []} />
     </div>
   );
 }

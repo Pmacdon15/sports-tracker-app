@@ -17,10 +17,9 @@ import { useUpdateExperimentalFeatureMutation } from "@/mutations/experimental";
 
 interface FeatureListProps {
   initialFeatures: (ExperimentalFeature & { description: string | null })[];
-  isAdmin: boolean;
 }
 
-export function FeatureList({ initialFeatures, isAdmin }: FeatureListProps) {
+export function FeatureList({ initialFeatures }: FeatureListProps) {
   const [features, setFeatures] =
     useState<(ExperimentalFeature & { description: string | null })[]>(
       initialFeatures,
@@ -88,7 +87,7 @@ export function FeatureList({ initialFeatures, isAdmin }: FeatureListProps) {
               </CardDescription>
             </div>
             <Switch
-              disabled={!isAdmin || mutation.isPending}
+              disabled={mutation.isPending}
               checked={feature.is_enabled}
               onCheckedChange={(checked) =>
                 handleToggle(feature.feature_name, checked)
@@ -103,7 +102,7 @@ export function FeatureList({ initialFeatures, isAdmin }: FeatureListProps) {
                 type="password"
                 placeholder="Enter API Key"
                 value={feature.api_key || ""}
-                disabled={!isAdmin || mutation.isPending}
+                disabled={mutation.isPending}
                 onChange={(e) =>
                   handleApiKeyChange(feature.feature_name, e.target.value)
                 }

@@ -12,12 +12,8 @@ export default clerkMiddleware(async (auth, req) => {
     const { has } = await auth.protect();
 
     if (req.nextUrl.pathname.startsWith("/experimental")) {
-      const isNotFree =
-        (await has({ permission: "org:subscription:manage" })) ||
-        (await has({ role: "org:admin" }));
-      if (!isNotFree) {
+      if (!(await has({ role: "org:admin" })))
         return Response.redirect(new URL("/", req.url));
-      }
     }
   }
 });
@@ -27,6 +23,6 @@ export const config = {
     // Skip Next.js internals and all static files, unless found in search params
     "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
     // Always run for API routes
-    "/(api|trpc|tracker|settings|inventory)(.*)",
+    "/(api|trpc|tracker|settings|inventory|experimental)(.*)",
   ],
 };
