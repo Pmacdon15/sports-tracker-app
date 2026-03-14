@@ -8,12 +8,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getAllEquipment } from "@/data/equipment";
+import { getAllEquipment } from "@/dal/equipment";
 import { InventoryCreateForm } from "./client";
 
 export default function InventoryPage() {
   const equipmentPromise = getAllEquipment();
-  const equipmentLengthPromise = equipmentPromise.then((eq) => eq.length);
+  const equipmentLengthPromise = equipmentPromise.then(
+    (res) => res.data?.length ?? 0,
+  );
 
   return (
     <div className="container mx-auto py-8 px-4 flex-1 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-5xl">

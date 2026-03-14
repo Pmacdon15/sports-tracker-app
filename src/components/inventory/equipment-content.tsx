@@ -1,13 +1,23 @@
 import { InventoryDeleteButton } from "@/app/inventory/client";
-import type { Equipment } from "@/data/equipment";
+import type { DbResult, Equipment } from "@/db/types";
 import { CardContent } from "../ui/card";
 
 export default async function EquipmentContent({
   equipmentPromise,
 }: {
-  equipmentPromise: Promise<Equipment[]>;
+  equipmentPromise: Promise<DbResult<Equipment[]>>;
 }) {
-  const equipment = await equipmentPromise;
+  const { data: equipment, error } = await equipmentPromise;
+
+  if (error) {
+    return (
+      <CardContent className="py-12 text-center text-destructive">
+        {error}
+      </CardContent>
+    );
+  }
+
+  if (!equipment) return null;
   return (
     <CardContent>
       <div className="grid sm:grid-cols-2 gap-3">

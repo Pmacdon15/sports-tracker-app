@@ -3,9 +3,7 @@
 import type * as React from "react";
 import { Suspense } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { Equipment } from "@/data/equipment";
-import type { Guest } from "@/data/guests";
-import type { Transaction } from "@/data/transactions";
+import type { DbResult, Equipment, Guest, Transaction } from "@/db/types";
 import CheckoutTabFallback from "../fallbacks/checkout-tab-fallback";
 import CheckoutTab from "../tabs/check-out";
 import ReturnsTab from "../tabs/returns";
@@ -18,9 +16,9 @@ export function TrackerTabs({
   initialDatePromise,
 }: {
   activeTab: React.ReactNode;
-  completedRentalsPromise: Promise<Transaction[]>;
-  equipmentPromise: Promise<Equipment[]>;
-  guestsPromise: Promise<Guest[]>;
+  completedRentalsPromise: Promise<DbResult<Transaction[]>>;
+  equipmentPromise: Promise<DbResult<Equipment[]>>;
+  guestsPromise: Promise<DbResult<Guest[]>>;
   initialDatePromise: Promise<string | undefined>;
 }) {
   return (

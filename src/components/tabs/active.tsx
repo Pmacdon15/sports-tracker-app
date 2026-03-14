@@ -1,6 +1,6 @@
 import { Clock } from "lucide-react";
 import { use } from "react";
-import type { Transaction } from "@/data/transactions";
+import type { DbResult, Transaction } from "@/db/types";
 import { cn } from "@/lib/utils";
 import ReturnButton from "../buttons/return-button";
 import {
@@ -16,11 +16,15 @@ export default function ActiveTab({
   rentalsPromise,
   settingsPromise,
 }: {
-  rentalsPromise: Promise<Transaction[]>;
-  settingsPromise: Promise<Record<string, string>>;
+  rentalsPromise: Promise<DbResult<Transaction[]>>;
+  settingsPromise: Promise<DbResult<Record<string, string>>>;
 }) {
-  const activeRentals = use(rentalsPromise);
-  const settings = use(settingsPromise);
+  const rentalsRes = use(rentalsPromise);
+  const settingsRes = use(settingsPromise);
+
+  const activeRentals = rentalsRes.data || [];
+  const settings = settingsRes.data || {};
+  const error = rentalsRes.error || settingsRes.error;
 
   function formatDuration(checkedOutAt: Date) {
     const minOut = Math.floor(
@@ -53,13 +57,15 @@ export default function ActiveTab({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {activeRentals.length === 0 ? (
+          {error ? (
+            <div className="text-center py-8 text-destructive">{error}</div>
+          ) : activeRentals.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               Nobody's out! All equipment is in base.
             </div>
           ) : (
             <div className="grid gap-4">
-              {activeRentals.map((rental: any) => (
+              {activeRentals.map((rental) => (
                 <div
                   key={rental.id}
                   className="flex items-center justify-between p-4 border rounded-lg bg-card shadow-sm"
@@ -85,7 +91,7 @@ export default function ActiveTab({
                       {formatDuration(rental.checked_out_at)}
                     </span>
                   </div>
-                  <ReturnButton equipment_unit={rental.equipment_unit} />
+                  <ReturnButton equipment_unit={rental.equipment_unit!} />
                 </div>
               ))}
             </div>

@@ -1,10 +1,10 @@
 import { Suspense } from "react";
 import { TrackerTabs } from "@/components/forms/TrackerTabs";
 import ActiveTab from "@/components/tabs/active";
-import { getAllEquipment } from "@/data/equipment";
-import { getAllGuests } from "@/data/guests";
-import { getSettings } from "@/data/settings";
-import { getActiveRentals, getCompletedRentals } from "@/data/transactions";
+import { getAllEquipment } from "@/dal/equipment";
+import { getAllGuests } from "@/dal/guests";
+import { getSettings } from "@/dal/settings";
+import { getActiveRentals, getCompletedRentals } from "@/dal/transactions";
 
 export default function TrackerPage(props: PageProps<"/tracker">) {
   const rentalsPromise = getActiveRentals();

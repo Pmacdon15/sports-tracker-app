@@ -1,8 +1,7 @@
 "use client";
 
-import { useMutation } from "@tanstack/react-query";
+import { use } from "react";
 import { toast } from "sonner";
-import { processSettingsUpdate } from "@/app/actions";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -14,36 +13,39 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { use } from "react";
+import type { DbResult } from "@/db/types";
+import { useUpdateSettingMutation } from "@/mutations/settings";
 
 export function SettingsForm({
   initialSettingsPromise,
 }: {
-  initialSettingsPromise: Promise<Record<string, string>>;
+  initialSettingsPromise: Promise<DbResult<Record<string, string>>>;
 }) {
-  const initialSettings = use(initialSettingsPromise);
-  const mutation = useMutation({
-    mutationFn: async (formData: FormData) => {
-      const yellow = formData.get("yellow_trigger_hours") as string;
-      const red = formData.get("red_trigger_hours") as string;
-      const result = await processSettingsUpdate({
+  const settingsRes = use(initialSettingsPromise);
+  const initialSettings = settingsRes.data || {};
+  const error = settingsRes.error;
+
+  const { mutate: updateSettings, isPending } = useUpdateSettingMutation();
+
+  const handleSave = async (formData: FormData) => {
+    const yellow = formData.get("yellow_trigger_hours") as string;
+    const red = formData.get("red_trigger_hours") as string;
+
+    updateSettings(
+      {
         yellow_trigger_hours: yellow,
         red_trigger_hours: red,
-      });
-      if (!result.success) throw new Error(result.message);
-      return result;
-    },
-    onSuccess: (data) => {
-      toast.success(data.message);
-    },
-    onError: (error: Error) => {
-      toast.error(error.message);
-    },
-  });
+      },
+      {
+        onSuccess: () => toast.success("Settings updated"),
+        onError: (error: Error) => toast.error(error.message),
+      },
+    );
+  };
 
   return (
     <Card className="border-primary/20 shadow-sm">
-      <form action={(fd) => mutation.mutate(fd)}>
+      <form action={handleSave}>
         <CardHeader>
           <CardTitle>Rental Triggers</CardTitle>
           <CardDescription>
@@ -52,6 +54,11 @@ export function SettingsForm({
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
+          {error && (
+            <div className="p-3 mb-4 text-sm text-destructive bg-destructive/10 rounded-lg">
+              {error}
+            </div>
+          )}
           <div className="space-y-2">
             <Label className="text-yellow-600 dark:text-yellow-500 font-bold">
               Yellow Trigger (Hours)
@@ -92,12 +99,8 @@ export function SettingsForm({
           </div>
         </CardContent>
         <CardFooter>
-          <Button
-            type="submit"
-            disabled={mutation.isPending}
-            className="px-8 shadow-sm"
-          >
-            {mutation.isPending ? "Saving..." : "Save Settings"}
+          <Button type="submit" disabled={isPending} className="px-8 shadow-sm">
+            {isPending ? "Saving..." : "Save Settings"}
           </Button>
         </CardFooter>
       </form>

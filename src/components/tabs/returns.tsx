@@ -2,7 +2,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 
 import React, { use } from "react";
-import type { Transaction } from "@/data/transactions";
+import type { DbResult, Transaction } from "@/db/types";
 import {
   Card,
   CardContent,
@@ -17,10 +17,10 @@ export default function ReturnsTab({
   completedRentalsPromise,
   initialDatePromise,
 }: {
-  completedRentalsPromise: Promise<Transaction[]>;
+  completedRentalsPromise: Promise<DbResult<Transaction[]>>;
   initialDatePromise: Promise<string | undefined>;
 }) {
-  const completedRentals = use(completedRentalsPromise);
+  const completedRes = use(completedRentalsPromise);
   const initialDate = use(initialDatePromise);
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -35,9 +35,10 @@ export default function ReturnsTab({
     return `${year}-${month}-${day}`;
   });
 
-  const allCompletedRentals = completedRentals || [];
+  const allCompletedRentals = completedRes.data || [];
+  const error = completedRes.error;
 
-  const filteredCompletedRentals = allCompletedRentals.filter((rental: any) => {
+  const filteredCompletedRentals = allCompletedRentals.filter((rental) => {
     const search = searchTerm.toLowerCase();
     return (
       rental.guest_name?.toLowerCase().includes(search) ||
@@ -81,7 +82,9 @@ export default function ReturnsTab({
           </div>
         </CardHeader>
         <CardContent>
-          {filteredCompletedRentals.length === 0 ? (
+          {error ? (
+            <div className="text-center py-8 text-destructive">{error}</div>
+          ) : filteredCompletedRentals.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               {searchTerm
                 ? "No results matching your search."
@@ -89,7 +92,7 @@ export default function ReturnsTab({
             </div>
           ) : (
             <div className="grid gap-3">
-              {filteredCompletedRentals.map((rental: any) => (
+              {filteredCompletedRentals.map((rental) => (
                 <div
                   key={rental.id}
                   className="flex items-center justify-between p-3 border-b last:border-0 hover:bg-muted/50 transition-colors"
@@ -101,13 +104,20 @@ export default function ReturnsTab({
                   </div>
                   <div className="text-xs text-muted-foreground text-right flex flex-col items-end">
                     <span>
-                      {new Date(rental.checked_in_at).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                      {rental.checked_in_at
+                        ? new Date(rental.checked_in_at).toLocaleTimeString(
+                            [],
+                            {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            },
+                          )
+                        : "N/A"}
                     </span>
                     <span>
-                      {new Date(rental.checked_in_at).toLocaleDateString()}
+                      {rental.checked_in_at
+                        ? new Date(rental.checked_in_at).toLocaleDateString()
+                        : ""}
                     </span>
                   </div>
                 </div>
