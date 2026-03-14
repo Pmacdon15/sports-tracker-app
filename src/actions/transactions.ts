@@ -1,7 +1,7 @@
 "use server";
 
 import { auth } from "@clerk/nextjs/server";
-import { revalidateTag } from "next/cache";
+import { updateTag } from "next/cache";
 import { checkoutEquipment, returnEquipment } from "@/dal/transactions";
 import type { DbResult, Transaction } from "@/db/types";
 
@@ -15,8 +15,8 @@ export async function checkoutEquipmentAction(
 
   const res = await checkoutEquipment(unit_number, guest_name, type);
   if (!res.error) {
-    revalidateTag(`active-rentals-${orgId}`, "page" as any);
-    revalidateTag(`equipment-${orgId}`, "page" as any); // Equipment status changes
+    updateTag(`active-rentals-${orgId}`);
+    updateTag(`equipment-${orgId}`);
   }
   return res;
 }
@@ -29,9 +29,9 @@ export async function returnEquipmentAction(
 
   const res = await returnEquipment(unit_number);
   if (!res.error) {
-    revalidateTag(`active-rentals-${orgId}`, "page" as any);
-    revalidateTag(`completed-rentals-${orgId}`, "page" as any);
-    revalidateTag(`equipment-${orgId}`, "page" as any); // Equipment status changes
+    updateTag(`active-rentals-${orgId}`);
+    updateTag(`completed-rentals-${orgId}`);
+    updateTag(`equipment-${orgId}`);
   }
   return res;
 }

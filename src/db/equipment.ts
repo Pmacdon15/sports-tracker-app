@@ -1,7 +1,10 @@
+import { cacheTag } from "next/cache";
 import { getSql } from "./db";
 import type { Equipment } from "./types";
 
 export async function getAllEquipmentDb(orgId: string): Promise<Equipment[]> {
+  "use cache";
+  cacheTag(`equipment-${orgId}`);
   const sql = getSql();
   const res = await sql`
     SELECT * FROM equipment 

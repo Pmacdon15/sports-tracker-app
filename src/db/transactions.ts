@@ -1,9 +1,12 @@
+import { cacheTag } from "next/cache";
 import { getSql } from "./db";
 import type { Transaction } from "./types";
 
 export async function getActiveRentalsDb(
   orgId: string,
 ): Promise<Transaction[]> {
+  "use cache";
+  cacheTag(`active-rentals-${orgId}`);
   const sql = getSql();
   const res = await sql`
     SELECT t.*, e.unit_number as equipment_unit, e.type as equipment_type, g.name as guest_name
@@ -23,6 +26,8 @@ export async function getCompletedRentalsDb(
   timezone: string,
   date?: string,
 ): Promise<Transaction[]> {
+   "use cache";
+  cacheTag(`completed-rentals-${orgId}`);
   const sql = getSql();
   if (date) {
     const res = await sql`
@@ -45,11 +50,11 @@ export async function getCompletedRentalsDb(
     JOIN guests g ON t.guest_id = g.id
     WHERE t.status = 'RETURNED' AND t.org_id = ${orgId}
     ORDER BY t.checked_in_at DESC
-    
+    LIMIT ${limit} OFFSET ${offset}
   `;
   return res as unknown as Transaction[];
 }
-// LIMIT ${limit} OFFSET ${offset} add this if you hook up pagination
+
 export async function checkoutEquipmentDb(
   orgId: string,
   equipmentId: number,

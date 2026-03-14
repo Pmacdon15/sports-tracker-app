@@ -1,7 +1,7 @@
 "use server";
 
 import { auth } from "@clerk/nextjs/server";
-import { revalidateTag } from "next/cache";
+import { updateTag } from "next/cache";
 import { updateSetting } from "@/dal/settings";
 import type { DbResult } from "@/db/types";
 
@@ -14,7 +14,7 @@ export async function updateSettingAction(
 
   const res = await updateSetting(key, value);
   if (!res.error) {
-    revalidateTag(`settings-${orgId}`, "page" as any);
+    updateTag(`settings-${orgId}`);
   }
   return res;
 }
