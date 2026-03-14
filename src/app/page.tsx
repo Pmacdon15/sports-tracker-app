@@ -2,6 +2,7 @@ import { Show } from "@clerk/nextjs";
 import { Activity, ArrowRight, MapPin, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
+import { TimezoneRedirect } from "@/components/auth/TimezoneRedirect";
 import { Button } from "@/components/ui/button";
 
 export default function Home() {
