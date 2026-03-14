@@ -2,12 +2,7 @@ import { Suspense } from "react";
 import InventoryTotalHeaderFallback from "@/components/fallbacks/inventroy-total-header-fallback";
 import EquipmentContent from "@/components/inventory/equipment-content";
 import InventoryTotalHeader from "@/components/inventory/inventory-total-header";
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardHeader } from "@/components/ui/card";
 import { getAllEquipment } from "@/dal/equipment";
 import { InventoryCreateForm } from "./client";
 
@@ -31,15 +26,7 @@ export default function InventoryPage() {
       </div>
 
       <div className="grid md:grid-cols-3 gap-8">
-        <div className="md:col-span-1">
-          <Card className="sticky top-24 border-primary/20 shadow-sm">
-            <CardHeader>
-              <CardTitle>Add Equipment</CardTitle>
-              <CardDescription>Standard unit into the DB.</CardDescription>
-            </CardHeader>
-            <InventoryCreateForm />
-          </Card>
-        </div>
+        <InventoryCreateForm />
 
         <div className="md:col-span-2">
           <Card>

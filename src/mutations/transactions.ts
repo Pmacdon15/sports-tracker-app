@@ -11,11 +11,13 @@ export function useCheckoutMutation() {
     mutationFn: async ({
       unit_number,
       guest_name,
+      type,
     }: {
       unit_number: string;
       guest_name: string;
+      type?: string;
     }) => {
-      const res = await checkoutEquipmentAction(unit_number, guest_name);
+      const res = await checkoutEquipmentAction(unit_number, guest_name, type);
       if (res.error) throw new Error(res.error);
       return res.data;
     },

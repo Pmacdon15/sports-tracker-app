@@ -9,7 +9,8 @@ export async function addEquipmentAction(
   type: string,
   unit_number: string,
 ): Promise<DbResult<Equipment>> {
-  const { orgId } = await auth.protect();
+  const { orgId  } = await auth.protect();
+  // const isAdmin = has({ role: "org:admin" });
   if (!orgId) throw new Error("Unauthorized");
 
   const res = await addEquipment(type, unit_number);
@@ -22,8 +23,9 @@ export async function addEquipmentAction(
 export async function deleteEquipmentAction(
   unit_number: string,
 ): Promise<DbResult<boolean>> {
-  const { orgId } = await auth.protect();
-  if (!orgId) throw new Error("Unauthorized");
+  const { orgId, has } = await auth.protect();
+  const isAdmin = has({ role: "org:admin" });
+  if (!orgId || !isAdmin) throw new Error("Unauthorized");
 
   const res = await deleteEquipment(unit_number);
   if (!res.error) {

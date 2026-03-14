@@ -51,7 +51,7 @@ export default function CheckoutTab({
 
   const { mutate: checkout, isPending } = useCheckoutMutation();
 
-  async function handleCheckout(formData: FormData) {
+  async function handleCheckout() {
     if (!guestName || !checkoutUnit) {
       toast.error("Please select both a guest and a unit.");
       return;
@@ -60,6 +60,7 @@ export default function CheckoutTab({
       {
         guest_name: guestName,
         unit_number: checkoutUnit,
+        type: isNewUnit ? checkoutType : undefined,
       },
       {
         onSuccess: () => {
