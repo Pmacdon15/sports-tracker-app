@@ -31,6 +31,8 @@ export function Navbar() {
   const [isOpen, setIsOpen] = React.useState(false);
   const { has } = useAuth();
   const isAdmin = has({ role: "org:admin" });
+  const isFree = has({ plan: "free" });
+  console.log(isFree);
   const NavLinks = () => (
     <>
       <NavigationMenuItem>
@@ -64,7 +66,7 @@ export function Navbar() {
             </NavigationMenuLink>
           </NavigationMenuItem>
         )}
-        {(has({ permission: "org:subscription:manage" }) || isAdmin) && (
+        {!isFree && isAdmin && (
           <NavigationMenuItem>
             <NavigationMenuLink
               asChild
@@ -201,8 +203,7 @@ export function Navbar() {
                       Settings
                     </Link>
                   )}
-                  {(has({ permission: "org:subscription:manage" }) ||
-                    isAdmin) && (
+                  {!isFree && isAdmin && (
                     <Link
                       href="/experimental"
                       onClick={() => setIsOpen(false)}

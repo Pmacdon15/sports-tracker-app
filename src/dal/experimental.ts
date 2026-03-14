@@ -9,9 +9,12 @@ export async function getExperimentalFeatures(): Promise<
   DbResult<(ExperimentalFeature & { description: string | null })[]>
 > {
   try {
-    const { orgId } = await auth.protect();
-    if (!orgId) throw new Error("Organization selection is required.");
-
+    const { orgId, has } = await auth.protect();
+    if (!has({ role: "org:admin" }) || !has({ plan: "free" }) || !orgId) {
+      throw new Error(
+        "Only administrators can update experimental features and must be paid account.",
+      );
+    }
     const data = await getExperimentalFeaturesDb(orgId);
     return { data, error: null };
   } catch (e: unknown) {
@@ -29,8 +32,10 @@ export async function updateExperimentalFeature(
     const { orgId, has } = await auth.protect();
     if (!orgId) throw new Error("Organization selection is required.");
 
-    if (!has({ role: "org:admin" })) {
-      throw new Error("Only administrators can update experimental features.");
+    if (!has({ role: "org:admin" }) || has({ plan: "free" })) {
+      throw new Error(
+        "Only administrators can update experimental features and must be paid account.",
+      );
     }
 
     const data = await upsertExperimentalFeatureDb(

@@ -12,7 +12,7 @@ export default clerkMiddleware(async (auth, req) => {
     const { has } = await auth.protect();
 
     if (req.nextUrl.pathname.startsWith("/experimental")) {
-      if (!(await has({ role: "org:admin" })))
+      if (!(await has({ role: "org:admin" })) || !(await has({ plan: "free" })))
         return Response.redirect(new URL("/", req.url));
     }
   }
