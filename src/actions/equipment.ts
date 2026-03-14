@@ -1,0 +1,33 @@
+"use server";
+
+import { auth } from "@clerk/nextjs/server";
+import { updateTag } from "next/cache";
+import { addEquipment, deleteEquipment } from "@/dal/equipment";
+import type { DbResult, Equipment } from "@/db/types";
+
+export async function addEquipmentAction(
+  type: string,
+  unit_number: string,
+): Promise<DbResult<Equipment>> {
+  const { orgId } = await auth.protect();
+  if (!orgId) throw new Error("Unauthorized");
+
+  const res = await addEquipment(type, unit_number);
+  if (!res.error) {
+    updateTag(`equipment-${orgId}`);
+  }
+  return res;
+}
+
+export async function deleteEquipmentAction(
+  unit_number: string,
+): Promise<DbResult<boolean>> {
+  const { orgId } = await auth.protect();
+  if (!orgId) throw new Error("Unauthorized");
+
+  const res = await deleteEquipment(unit_number);
+  if (!res.error) {
+    updateTag(`equipment-${orgId}`);
+  }
+  return res;
+}

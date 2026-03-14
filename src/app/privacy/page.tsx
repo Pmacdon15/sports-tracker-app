@@ -38,7 +38,7 @@ export default function PrivacyPolicyPage() {
           </p>
 
           <p className="text-sm text-muted-foreground mt-8">
-            Last updated: {new Date().getFullYear()}
+            Last updated: 2026
           </p>
         </CardContent>
       </Card>

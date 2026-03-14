@@ -1,10 +1,10 @@
 "use client";
 
-import { OrganizationSwitcher, SignInButton, UserButton } from "@clerk/nextjs";
+import { OrganizationSwitcher, Show, SignInButton, UserButton } from "@clerk/nextjs";
 import { Dumbbell, Menu } from "lucide-react";
 import Link from "next/link";
 import * as React from "react";
-import { Show } from "@/components/auth/Show";
+// import { Show } from "@/components/auth/Show";
 import { Button } from "@/components/ui/button";
 import {
     NavigationMenu,
@@ -31,7 +31,7 @@ export function Navbar() {
           <Link href="/">Home</Link>
         </NavigationMenuLink>
       </NavigationMenuItem>
-      <Show when="signedIn">
+      <Show when="signed-in">
         <NavigationMenuItem>
           <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
             <Link href="/tracker">Tracker</Link>
@@ -74,14 +74,14 @@ export function Navbar() {
           </NavigationMenu>
 
           <div className="flex items-center gap-2 ml-4">
-            <Show when="signedOut">
+            <Show when="signed-out">
               <SignInButton mode="modal">
                 <Button variant="default" size="sm">
                   Sign In
                 </Button>
               </SignInButton>
             </Show>
-            <Show when="signedIn">
+            <Show when="signed-in">
               <OrganizationSwitcher
                 appearance={{
                   elements: {
@@ -97,14 +97,14 @@ export function Navbar() {
 
         {/* Mobile Nav */}
         <div className="flex md:hidden items-center gap-4">
-          <Show when="signedOut">
+          <Show when="signed-out">
             <SignInButton mode="modal">
               <Button variant="default" size="sm">
                 Sign In
               </Button>
             </SignInButton>
           </Show>
-          <Show when="signedIn">
+          <Show when="signed-in">
             <OrganizationSwitcher
               hidePersonal={false}
               appearance={{
@@ -143,7 +143,7 @@ export function Navbar() {
                 >
                   Home
                 </Link>
-                <Show when="signedIn">
+                <Show when="signed-in">
                   <Link
                     href="/tracker"
                     onClick={() => setIsOpen(false)}
