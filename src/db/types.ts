@@ -35,6 +35,13 @@ export interface Setting {
   updated_at: Date;
 }
 
+export interface Organization {
+  org_id: string;
+  name: string;
+  equipment_limit: number;
+  created_at: Date;
+}
+
 export type DbResult<T> =
   | { data: T; error: null }
   | { data: null; error: string };

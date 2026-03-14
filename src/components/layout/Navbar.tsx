@@ -38,6 +38,11 @@ export function Navbar() {
           <Link href="/">Home</Link>
         </NavigationMenuLink>
       </NavigationMenuItem>
+      <NavigationMenuItem>
+        <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+          <Link href="/plans">Plans</Link>
+        </NavigationMenuLink>
+      </NavigationMenuItem>
       <Show when="signed-in">
         <NavigationMenuItem>
           <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
@@ -154,6 +159,13 @@ export function Navbar() {
                   className="hover:text-primary pl-1 font-medium"
                 >
                   Home
+                </Link>
+                <Link
+                  href="/plans"
+                  onClick={() => setIsOpen(false)}
+                  className="hover:text-primary pl-1 font-medium"
+                >
+                  Plans
                 </Link>
                 <Show when="signed-in">
                   <Link
