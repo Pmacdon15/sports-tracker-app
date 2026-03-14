@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
+import { Suspense } from "react";
 import { Toaster } from "sonner";
 import { Navbar } from "@/components/layout/Navbar";
 import { Providers } from "./providers";
@@ -33,7 +34,9 @@ export default function RootLayout({
           className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col font-sans`}
         >
           <Providers>
-            <Navbar />
+            <Suspense>
+              <Navbar />
+            </Suspense>
             <main className="flex-1 flex flex-col">{children}</main>
             <Toaster richColors position="bottom-right" />
           </Providers>

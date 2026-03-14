@@ -10,7 +10,7 @@ export async function getExperimentalFeatures(): Promise<
 > {
   try {
     const { orgId, has } = await auth.protect();
-    if (!has({ role: "org:admin" }) || !has({ plan: "free" }) || !orgId) {
+    if (!has({ role: "org:admin" }) || has({ plan: "free" }) || !orgId) {
       throw new Error(
         "Only administrators can update experimental features and must be paid account.",
       );
