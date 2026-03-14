@@ -27,8 +27,9 @@ export async function updateSetting(
   value: string,
 ): Promise<DbResult<void>> {
   try {
-    const { orgId } = await auth.protect();
+    const { orgId, has } = await auth.protect();
     if (!orgId) throw new Error("Organization selection is required.");
+    if (!has({ role: "org:admin" })) throw new Error("not Admin");
 
     await updateSettingDb(orgId, key, value);
     return { data: undefined, error: null };
