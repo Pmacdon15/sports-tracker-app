@@ -1,29 +1,36 @@
 "use client";
 
-import { OrganizationSwitcher, Show, SignInButton, UserButton } from "@clerk/nextjs";
+import {
+  OrganizationSwitcher,
+  Show,
+  SignInButton,
+  UserButton,
+  useAuth,
+} from "@clerk/nextjs";
 import { Dumbbell, Menu } from "lucide-react";
 import Link from "next/link";
 import * as React from "react";
 // import { Show } from "@/components/auth/Show";
 import { Button } from "@/components/ui/button";
 import {
-    NavigationMenu,
-    NavigationMenuItem,
-    NavigationMenuLink,
-    NavigationMenuList,
-    navigationMenuTriggerStyle,
+  NavigationMenu,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import {
-    Sheet,
-    SheetContent,
-    SheetHeader,
-    SheetTitle,
-    SheetTrigger,
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
 } from "@/components/ui/sheet";
 
 export function Navbar() {
   const [isOpen, setIsOpen] = React.useState(false);
-
+  const { has } = useAuth();
+  const isAdmin = has({ role: "org:admin" });
   const NavLinks = () => (
     <>
       <NavigationMenuItem>
@@ -42,11 +49,16 @@ export function Navbar() {
             <Link href="/inventory">Inventory</Link>
           </NavigationMenuLink>
         </NavigationMenuItem>
-        <NavigationMenuItem>
-          <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-            <Link href="/settings">Settings</Link>
-          </NavigationMenuLink>
-        </NavigationMenuItem>
+        {isAdmin && (
+          <NavigationMenuItem>
+            <NavigationMenuLink
+              asChild
+              className={navigationMenuTriggerStyle()}
+            >
+              <Link href="/settings">Settings</Link>
+            </NavigationMenuLink>
+          </NavigationMenuItem>
+        )}
       </Show>
     </>
   );
@@ -158,13 +170,15 @@ export function Navbar() {
                   >
                     Inventory
                   </Link>
-                  <Link
-                    href="/settings"
-                    onClick={() => setIsOpen(false)}
-                    className="hover:text-primary pl-1 font-medium"
-                  >
-                    Settings
-                  </Link>
+                  {isAdmin && (
+                    <Link
+                      href="/settings"
+                      onClick={() => setIsOpen(false)}
+                      className="hover:text-primary pl-1 font-medium"
+                    >
+                      Settings
+                    </Link>
+                  )}
                 </Show>
               </div>
             </SheetContent>
