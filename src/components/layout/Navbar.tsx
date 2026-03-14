@@ -64,6 +64,16 @@ export function Navbar() {
             </NavigationMenuLink>
           </NavigationMenuItem>
         )}
+        {(has({ permission: "org:subscription:manage" }) || isAdmin) && (
+          <NavigationMenuItem>
+            <NavigationMenuLink
+              asChild
+              className={navigationMenuTriggerStyle()}
+            >
+              <Link href="/experimental">Experimental</Link>
+            </NavigationMenuLink>
+          </NavigationMenuItem>
+        )}
       </Show>
     </>
   );
@@ -189,6 +199,16 @@ export function Navbar() {
                       className="hover:text-primary pl-1 font-medium"
                     >
                       Settings
+                    </Link>
+                  )}
+                  {(has({ permission: "org:subscription:manage" }) ||
+                    isAdmin) && (
+                    <Link
+                      href="/experimental"
+                      onClick={() => setIsOpen(false)}
+                      className="hover:text-primary pl-1 font-medium"
+                    >
+                      Experimental
                     </Link>
                   )}
                 </Show>

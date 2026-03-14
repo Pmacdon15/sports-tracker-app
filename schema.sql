@@ -2,6 +2,8 @@ DROP TABLE IF EXISTS transactions;
 DROP TABLE IF EXISTS equipment;
 DROP TABLE IF EXISTS guests;
 DROP TABLE IF EXISTS settings;
+DROP TABLE IF EXISTS experimental_features;
+DROP TABLE IF EXISTS system_features;
 DROP TABLE IF EXISTS organizations;
 
 CREATE TABLE IF NOT EXISTS organizations (
@@ -47,3 +49,21 @@ CREATE TABLE IF NOT EXISTS settings (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(key, org_id)
 );
+
+CREATE TABLE IF NOT EXISTS system_features (
+  name VARCHAR(255) PRIMARY KEY,
+  description TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS experimental_features (
+  org_id VARCHAR(255) NOT NULL,
+  feature_name VARCHAR(255) REFERENCES system_features(name),
+  is_enabled BOOLEAN DEFAULT FALSE,
+  api_key TEXT,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (org_id, feature_name)
+);
+
+-- Seed system features
+INSERT INTO system_features (name, description) VALUES ('test', 'A test feature for development.') ON CONFLICT DO NOTHING;
