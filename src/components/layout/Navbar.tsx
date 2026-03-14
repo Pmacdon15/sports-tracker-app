@@ -38,6 +38,11 @@ export function Navbar() {
           <Link href="/">Home</Link>
         </NavigationMenuLink>
       </NavigationMenuItem>
+      <NavigationMenuItem>
+        <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+          <Link href="/plans">Plans</Link>
+        </NavigationMenuLink>
+      </NavigationMenuItem>
       <Show when="signed-in">
         <NavigationMenuItem>
           <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
@@ -56,6 +61,16 @@ export function Navbar() {
               className={navigationMenuTriggerStyle()}
             >
               <Link href="/settings">Settings</Link>
+            </NavigationMenuLink>
+          </NavigationMenuItem>
+        )}
+        {(has({ permission: "org:subscription:manage" }) || isAdmin) && (
+          <NavigationMenuItem>
+            <NavigationMenuLink
+              asChild
+              className={navigationMenuTriggerStyle()}
+            >
+              <Link href="/experimental">Experimental</Link>
             </NavigationMenuLink>
           </NavigationMenuItem>
         )}
@@ -155,6 +170,13 @@ export function Navbar() {
                 >
                   Home
                 </Link>
+                <Link
+                  href="/plans"
+                  onClick={() => setIsOpen(false)}
+                  className="hover:text-primary pl-1 font-medium"
+                >
+                  Plans
+                </Link>
                 <Show when="signed-in">
                   <Link
                     href="/tracker"
@@ -177,6 +199,16 @@ export function Navbar() {
                       className="hover:text-primary pl-1 font-medium"
                     >
                       Settings
+                    </Link>
+                  )}
+                  {(has({ permission: "org:subscription:manage" }) ||
+                    isAdmin) && (
+                    <Link
+                      href="/experimental"
+                      onClick={() => setIsOpen(false)}
+                      className="hover:text-primary pl-1 font-medium"
+                    >
+                      Experimental
                     </Link>
                   )}
                 </Show>

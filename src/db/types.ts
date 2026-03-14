@@ -35,6 +35,27 @@ export interface Setting {
   updated_at: Date;
 }
 
+export interface Organization {
+  org_id: string;
+  name: string;
+  equipment_limit: number;
+  created_at: Date;
+}
+
+export interface ExperimentalFeature {
+  org_id: string;
+  feature_name: string;
+  is_enabled: boolean;
+  api_key: string | null;
+  updated_at: Date;
+}
+
+export interface SystemFeature {
+  name: string;
+  description: string | null;
+  created_at: Date;
+}
+
 export type DbResult<T> =
   | { data: T; error: null }
   | { data: null; error: string };
