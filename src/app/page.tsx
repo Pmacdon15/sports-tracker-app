@@ -1,6 +1,7 @@
+import { Show } from "@clerk/nextjs";
 import { Activity, ArrowRight, MapPin, ShieldCheck } from "lucide-react";
 import Link from "next/link";
-import { Show } from "@/components/auth/Show";
+import { Suspense } from "react";
 import { Button } from "@/components/ui/button";
 
 export default function Home() {
@@ -19,32 +20,36 @@ export default function Home() {
 
       {/* Call to Actions */}
       <div className="flex flex-col sm:flex-row gap-4 mb-16">
-        <Show when="signedOut">
-          <Button size="lg" className="w-full sm:w-auto font-semibold gap-2">
-            Get Started
-            <ArrowRight className="w-4 h-4" />
-          </Button>
-        </Show>
-        <Show when="signedIn">
-          <Button
-            size="lg"
-            render={<Link href="/tracker" />}
-            nativeButton={false}
-            className="w-full sm:w-auto font-semibold gap-2 shadow-lg shadow-primary/25"
-          >
-            Go to Tracker
-            <ArrowRight className="w-4 h-4" />
-          </Button>
-          <Button
-            size="lg"
-            variant="outline"
-            render={<Link href="/inventory" />}
-            nativeButton={false}
-            className="w-full sm:w-auto font-semibold"
-          >
-            View Inventory
-          </Button>
-        </Show>
+        <Suspense>
+          <Show when="signed-out">
+            <Button size="lg" className="w-full sm:w-auto font-semibold gap-2">
+              Get Started
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+          </Show>
+        </Suspense>
+        <Suspense>
+          <Show when="signed-in">
+            <Button
+              size="lg"
+              render={<Link href="/tracker" />}
+              nativeButton={false}
+              className="w-full sm:w-auto font-semibold gap-2 shadow-lg shadow-primary/25"
+            >
+              Go to Tracker
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              render={<Link href="/inventory" />}
+              nativeButton={false}
+              className="w-full sm:w-auto font-semibold"
+            >
+              View Inventory
+            </Button>
+          </Show>
+        </Suspense>
       </div>
 
       {/* Features Outline */}

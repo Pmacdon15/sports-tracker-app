@@ -29,7 +29,7 @@ export async function getCompletedRentals(
   date?: string,
 ): Promise<DbResult<Transaction[]>> {
   try {
-    const { orgId } = await auth();
+   const { orgId } = await auth.protect();
     if (!orgId) throw new Error("Organization selection is required.");
 
     const data = await getCompletedRentalsDb(

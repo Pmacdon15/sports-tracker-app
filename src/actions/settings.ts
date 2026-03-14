@@ -9,7 +9,7 @@ export async function updateSettingAction(
   key: string,
   value: string,
 ): Promise<DbResult<void>> {
-  const { orgId } = await auth();
+  const { orgId } = await auth.protect();
   if (!orgId) throw new Error("Unauthorized");
 
   const res = await updateSetting(key, value);

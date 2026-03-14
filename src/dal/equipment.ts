@@ -43,7 +43,7 @@ export async function addEquipment(
   unit_number: string,
 ): Promise<DbResult<Equipment>> {
   try {
-    const { orgId } = await auth();
+    const { orgId } = await auth.protect();
     if (!orgId) throw new Error("Organization selection is required.");
 
     const data = await addEquipmentDb(orgId, type, unit_number);
@@ -58,7 +58,7 @@ export async function deleteEquipment(
   unit_number: string,
 ): Promise<DbResult<boolean>> {
   try {
-    const { orgId } = await auth();
+   const { orgId } = await auth.protect();
     if (!orgId) throw new Error("Organization selection is required.");
 
     const data = await deleteEquipmentDb(orgId, unit_number);

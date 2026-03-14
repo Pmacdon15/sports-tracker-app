@@ -10,7 +10,7 @@ export async function checkoutEquipmentAction(
   guest_name: string,
   type?: string,
 ): Promise<DbResult<Transaction>> {
-  const { orgId } = await auth();
+  const { orgId } = await auth.protect();
   if (!orgId) throw new Error("Unauthorized");
 
   const res = await checkoutEquipment(unit_number, guest_name, type);
