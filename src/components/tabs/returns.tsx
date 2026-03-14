@@ -12,6 +12,7 @@ import {
 } from "../ui/card";
 import { Input } from "../ui/input";
 import { TabsContent } from "../ui/tabs";
+import { TimezoneRedirect } from "../auth/TimezoneRedirect";
 
 export default function ReturnsTab({
   completedRentalsPromise,
@@ -53,7 +54,7 @@ export default function ReturnsTab({
     params.set("date", newDate);
     router.replace(`/tracker?${params.toString()}`);
   };
-
+  if (!initialDate) return <TimezoneRedirect />;
   return (
     <TabsContent value="returns">
       <Card>

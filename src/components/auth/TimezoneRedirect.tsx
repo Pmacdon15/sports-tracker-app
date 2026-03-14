@@ -21,12 +21,12 @@ export function TimezoneRedirect() {
     }
     router.replace(`${pathname}?${params.toString()}`);
   }, [router, pathname, searchParams]);
-
-  return (
-    <div className="flex-1 flex items-center justify-center">
-      <div className="animate-pulse text-muted-foreground">
-        Detecting timezone and loading tracker...
-      </div>
-    </div>
-  );
+  return null;
+  // return (
+  //   <div className="flex-1 flex items-center justify-center">
+  //     <div className="animate-pulse text-muted-foreground">
+  //       Detecting timezone and loading tracker...
+  //     </div>
+  //   </div>
+  // );
 }

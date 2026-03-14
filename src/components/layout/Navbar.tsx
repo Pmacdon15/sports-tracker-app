@@ -32,7 +32,7 @@ export function Navbar() {
   const { has } = useAuth();
   const isAdmin = has({ role: "org:admin" });
   const isFree = has({ plan: "free" });
-  console.log(isFree);
+  const today = new Date().toISOString().split("T")[0];
   const NavLinks = () => (
     <>
       <NavigationMenuItem>
@@ -48,7 +48,7 @@ export function Navbar() {
       <Show when="signed-in">
         <NavigationMenuItem>
           <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-            <Link href="/tracker">Tracker</Link>
+            <Link href={`/tracker?date=${today}`}>Tracker</Link>
           </NavigationMenuLink>
         </NavigationMenuItem>
         <NavigationMenuItem>
@@ -72,7 +72,7 @@ export function Navbar() {
               asChild
               className={navigationMenuTriggerStyle()}
             >
-              <Link href="/experimental">Experimental</Link>
+              <Link href={`/experimental`}>Experimental</Link>
             </NavigationMenuLink>
           </NavigationMenuItem>
         )}
@@ -181,7 +181,7 @@ export function Navbar() {
                 </Link>
                 <Show when="signed-in">
                   <Link
-                    href="/tracker"
+                    href={`/tracker?date=${today}`}
                     onClick={() => setIsOpen(false)}
                     className="hover:text-primary pl-1 font-medium"
                   >
@@ -205,7 +205,7 @@ export function Navbar() {
                   )}
                   {!isFree && isAdmin && (
                     <Link
-                      href="/experimental"
+                      href={`/experimental`}
                       onClick={() => setIsOpen(false)}
                       className="hover:text-primary pl-1 font-medium"
                     >

@@ -21,37 +21,36 @@ export async function getActiveRentalsDb(
 
 export async function getCompletedRentalsDb(
   orgId: string,
-  limit: number,
-  offset: number,
-  timezone: string,
   date?: string,
 ): Promise<Transaction[]> {
-   "use cache";
-  cacheTag(`completed-rentals-${orgId}`);
+  "use cache";
+
+  // 1. Fallback to server date if 'date' is undefined
+  // Using .toISOString().split('T')[0] gives us '2026-03-13'
+  const targetDate = date ?? new Date().toISOString().split("T")[0];
+
+  // 2. Update cacheTag to use the resolved date
+  cacheTag(`completed-rentals-${orgId}-${targetDate}`);
+
   const sql = getSql();
-  if (date) {
-    const res = await sql`
-      SELECT t.*, e.unit_number as equipment_unit, e.type as equipment_type, g.name as guest_name
-      FROM transactions t
-      JOIN equipment e ON t.equipment_id = e.id
-      JOIN guests g ON t.guest_id = g.id
-      WHERE t.status = 'RETURNED' 
-        AND t.org_id = ${orgId}
-        AND (t.checked_in_at AT TIME ZONE 'UTC' AT TIME ZONE ${timezone})::date = ${date}::date
-      ORDER BY t.checked_in_at DESC
-    `;
-    return res as unknown as Transaction[];
-  }
+  const timezone = "UTC";
 
   const res = await sql`
-    SELECT t.*, e.unit_number as equipment_unit, e.type as equipment_type, g.name as guest_name
+    SELECT 
+      t.*, 
+      e.unit_number as equipment_unit, 
+      e.type as equipment_type, 
+      g.name as guest_name
     FROM transactions t
     JOIN equipment e ON t.equipment_id = e.id
     JOIN guests g ON t.guest_id = g.id
-    WHERE t.status = 'RETURNED' AND t.org_id = ${orgId}
+    WHERE t.status = 'RETURNED' 
+      AND t.org_id = ${orgId}
+      -- Compare against our resolved targetDate
+      AND (t.checked_in_at AT TIME ZONE ${timezone})::date = ${targetDate}::date
     ORDER BY t.checked_in_at DESC
-    LIMIT ${limit} OFFSET ${offset}
   `;
+
   return res as unknown as Transaction[];
 }
 

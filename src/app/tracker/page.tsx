@@ -9,12 +9,10 @@ import { getActiveRentals, getCompletedRentals } from "@/dal/transactions";
 export default function TrackerPage(props: PageProps<"/tracker">) {
   const rentalsPromise = getActiveRentals();
   const completedRentalsPromise = props.searchParams.then((params) => {
-    const tzStr = Array.isArray(params.timezone)
-      ? params.timezone[0]
-      : params.timezone;
+   
     const dateStr = Array.isArray(params.date) ? params.date[0] : params.date;
 
-    return getCompletedRentals(55, 0, tzStr, dateStr);
+    return getCompletedRentals(dateStr);
   });
 
   const dateStringPromise = props.searchParams.then((params) => {
