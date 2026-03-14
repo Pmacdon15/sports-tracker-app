@@ -1,5 +1,4 @@
 import { auth } from "@clerk/nextjs/server";
-import { cacheTag } from "next/cache";
 import {
   getExperimentalFeaturesDb,
   upsertExperimentalFeatureDb,
@@ -12,9 +11,6 @@ export async function getExperimentalFeatures(): Promise<
   try {
     const { orgId } = await auth.protect();
     if (!orgId) throw new Error("Organization selection is required.");
-
-    // "use cache"
-    cacheTag(`experimental-features-${orgId}`);
 
     const data = await getExperimentalFeaturesDb(orgId);
     return { data, error: null };
