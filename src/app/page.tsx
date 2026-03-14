@@ -7,6 +7,9 @@ import { Button } from "@/components/ui/button";
 export default function Home() {
   return (
     <div className="flex flex-col flex-1 items-center justify-center p-8 text-center animate-in fade-in slide-in-from-bottom-8 duration-1000">
+      <Suspense>
+        <TimezoneRedirect />
+      </Suspense>
       {/* Hero Section */}
       <h1 className="text-4xl md:text-6xl font-extrabold text-foreground tracking-tight mb-6">
         Manage Your <span className="text-primary">Equipment</span>

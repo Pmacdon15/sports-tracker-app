@@ -22,6 +22,7 @@ export async function getActiveRentalsDb(
 export async function getCompletedRentalsDb(
   orgId: string,
   date?: string,
+  timezone = "UTC",
 ): Promise<Transaction[]> {
   "use cache";
 
@@ -30,10 +31,9 @@ export async function getCompletedRentalsDb(
   const targetDate = date ?? new Date().toISOString().split("T")[0];
 
   // 2. Update cacheTag to use the resolved date
-  cacheTag(`completed-rentals-${orgId}-${targetDate}`);
+  cacheTag(`completed-rentals-${orgId}-${targetDate}-${timezone}`);
 
   const sql = getSql();
-  const timezone = "UTC";
 
   const res = await sql`
     SELECT 

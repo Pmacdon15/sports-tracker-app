@@ -33,6 +33,10 @@ export function Navbar() {
   const isAdmin = has({ role: "org:admin" });
   const isFree = has({ plan: "free" });
   const today = new Date().toISOString().split("T")[0];
+  const timezone = React.useMemo(
+    () => Intl.DateTimeFormat().resolvedOptions().timeZone,
+    [],
+  );
   const NavLinks = () => (
     <>
       <NavigationMenuItem>
@@ -48,7 +52,9 @@ export function Navbar() {
       <Show when="signed-in">
         <NavigationMenuItem>
           <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-            <Link href={`/tracker?date=${today}`}>Tracker</Link>
+            <Link href={`/tracker?date=${today}&timezone=${timezone}`}>
+              Tracker
+            </Link>
           </NavigationMenuLink>
         </NavigationMenuItem>
         <NavigationMenuItem>
@@ -181,7 +187,7 @@ export function Navbar() {
                 </Link>
                 <Show when="signed-in">
                   <Link
-                    href={`/tracker?date=${today}`}
+                    href={`/tracker?date=${today}&timezone=${timezone}`}
                     onClick={() => setIsOpen(false)}
                     className="hover:text-primary pl-1 font-medium"
                   >

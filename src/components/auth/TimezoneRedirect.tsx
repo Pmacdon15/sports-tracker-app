@@ -11,15 +11,25 @@ export function TimezoneRedirect() {
   useEffect(() => {
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
     const params = new URLSearchParams(searchParams.toString());
-    params.set("timezone", tz);
+    let changed = false;
+
+    if (params.get("timezone") !== tz) {
+      params.set("timezone", tz);
+      changed = true;
+    }
+
     if (!params.has("date")) {
       const now = new Date();
       const year = now.getFullYear();
       const month = String(now.getMonth() + 1).padStart(2, "0");
       const day = String(now.getDate()).padStart(2, "0");
       params.set("date", `${year}-${month}-${day}`);
+      changed = true;
     }
-    router.replace(`${pathname}?${params.toString()}`);
+
+    if (changed) {
+      router.replace(`${pathname}?${params.toString()}`);
+    }
   }, [router, pathname, searchParams]);
   return null;
   // return (
