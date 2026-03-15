@@ -31,7 +31,7 @@ export function Navbar() {
   const [isOpen, setIsOpen] = React.useState(false);
   const { has } = useAuth();
   const isAdmin = has({ role: "org:admin" });
-  const isFree = has({ plan: "free" });
+  // const isFree = has({ plan: "free" });
   const today = new Date().toISOString().split("T")[0];
   const timezone = React.useMemo(
     () => Intl.DateTimeFormat().resolvedOptions().timeZone,
@@ -72,7 +72,7 @@ export function Navbar() {
             </NavigationMenuLink>
           </NavigationMenuItem>
         )}
-        {!isFree && isAdmin && (
+        {/* {!isFree && isAdmin && (
           <NavigationMenuItem>
             <NavigationMenuLink
               asChild
@@ -81,13 +81,13 @@ export function Navbar() {
               <Link href={`/experimental`}>Experimental</Link>
             </NavigationMenuLink>
           </NavigationMenuItem>
-        )}
+        )} */}
       </Show>
     </>
   );
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
       <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-8">
         {/* Brand */}
         <div className="flex items-center gap-2">
@@ -209,7 +209,7 @@ export function Navbar() {
                       Settings
                     </Link>
                   )}
-                  {!isFree && isAdmin && (
+                  {/* {!isFree && isAdmin && (
                     <Link
                       href={`/experimental`}
                       onClick={() => setIsOpen(false)}
@@ -217,7 +217,7 @@ export function Navbar() {
                     >
                       Experimental
                     </Link>
-                  )}
+                  )} */}
                 </Show>
               </div>
             </SheetContent>
