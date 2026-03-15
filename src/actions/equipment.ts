@@ -22,7 +22,7 @@ export async function addEquipmentAction(
 
 export async function deleteEquipmentAction(
   unit_number: string,
-): Promise<DbResult<boolean>> {
+): Promise<DbResult<Equipment>> {
   const { orgId, has } = await auth.protect();
   const isAdmin = has({ role: "org:admin" });
   if (!orgId || !isAdmin) throw new Error("Unauthorized");
