@@ -1,4 +1,5 @@
 import { PricingTable } from "@clerk/nextjs";
+import { Suspense } from "react";
 
 export default function PlansPage() {
   return (
@@ -13,7 +14,9 @@ export default function PlansPage() {
         </p>
       </div>
       <div className="w-full flex justify-center">
-        <PricingTable for="organization" />
+        <Suspense>
+          <PricingTable for="organization" />
+        </Suspense>
       </div>
     </div>
   );
