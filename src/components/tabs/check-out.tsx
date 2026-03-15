@@ -2,9 +2,8 @@
 import { ArrowRightIcon } from "lucide-react";
 import React, { use } from "react";
 import { toast } from "sonner";
-import type { DbResult, Equipment, Guest } from "@/db/types";
+import type { DbResult, Equipment, Guest, UnitType } from "@/db/types";
 import { useCheckoutMutation } from "@/mutations/transactions";
-import { useUnitTypesQuery } from "@/mutations/unit_types";
 import { Button } from "../ui/button";
 import {
   Card,
@@ -20,24 +19,27 @@ import { TabsContent } from "../ui/tabs";
 
 export default function CheckoutTab({
   equipmentPromise,
+  equipmentTypePromise,
   guestsPromise,
 }: {
   equipmentPromise: Promise<DbResult<Equipment[]>>;
+  equipmentTypePromise: Promise<DbResult<UnitType[]>>
   guestsPromise: Promise<DbResult<Guest[]>>;
 }) {
   const guestsRes = use(guestsPromise);
   const equipmentRes = use(equipmentPromise);
+  const equipmentType = use(equipmentTypePromise);
 
   const guests = guestsRes.data || [];
   const equipment = equipmentRes.data || [];
+  const unitTypes = equipmentType.data || []
   const error = guestsRes.error || equipmentRes.error;
 
   const [guestName, setGuestName] = React.useState("");
   const [checkoutUnit, setCheckoutUnit] = React.useState("");
   const [checkoutType, setCheckoutType] = React.useState("");
 
-  const { data: unitTypes = [] } = useUnitTypesQuery();
-
+  
   const availableEqOptions = equipment
     .filter((e) => e.status === "AVAILABLE")
     .map((e) => ({
@@ -78,7 +80,7 @@ export default function CheckoutTab({
     checkoutUnit !== "" &&
     !availableEqOptions.some((opt) => opt.value === checkoutUnit);
 
-  const unitTypeOptions = unitTypes?.map((t) => ({
+  const unitTypeOptions = unitTypes.map((t) => ({
     label: t.name,
     value: t.name,
   }));
@@ -129,7 +131,7 @@ export default function CheckoutTab({
                     New Unit Detected - Select Type
                   </Label>
                   <Combobox
-                    options={unitTypeOptions}
+                    options={unitTypeOptions||[]}
                     value={checkoutType}
                     onValueChange={setCheckoutType}
                     placeholder="Select or Type Unit Type..."

@@ -4,6 +4,7 @@ import EquipmentContent from "@/components/inventory/equipment-content";
 import InventoryTotalHeader from "@/components/inventory/inventory-total-header";
 import { Card, CardHeader } from "@/components/ui/card";
 import { getAllEquipment } from "@/dal/equipment";
+import { getAllUnitTypes } from "@/dal/unit_types";
 import { InventoryCreateForm } from "./client";
 
 export default function InventoryPage() {
@@ -11,6 +12,7 @@ export default function InventoryPage() {
   const equipmentLengthPromise = equipmentPromise.then(
     (res) => res.data?.length ?? 0,
   );
+  const equipmentTypePromise = getAllUnitTypes();
 
   return (
     <div className="container mx-auto py-8 px-4 flex-1 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-5xl">
@@ -26,7 +28,9 @@ export default function InventoryPage() {
       </div>
 
       <div className="grid md:grid-cols-3 gap-8">
-        <InventoryCreateForm />
+        <Suspense>
+          <InventoryCreateForm equipmentTypePromise={equipmentTypePromise} />
+        </Suspense>
 
         <div className="md:col-span-2">
           <Card>

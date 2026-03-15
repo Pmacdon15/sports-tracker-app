@@ -2,15 +2,9 @@
 
 import { auth } from "@clerk/nextjs/server";
 import { updateTag } from "next/cache";
-import { addUnitType, getAllUnitTypes } from "@/dal/unit_types";
+import { addUnitType } from "@/dal/unit_types";
 import type { DbResult, UnitType } from "@/db/types";
 
-export async function getUnitTypesAction(): Promise<DbResult<UnitType[]>> {
-  const { orgId } = await auth.protect();
-  if (!orgId) throw new Error("Unauthorized");
-
-  return await getAllUnitTypes();
-}
 
 export async function addUnitTypeAction(
   name: string,

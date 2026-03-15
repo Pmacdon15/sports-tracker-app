@@ -1,18 +1,7 @@
 "use client";
 
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { addUnitTypeAction, getUnitTypesAction } from "@/actions/unit_types";
-
-export function useUnitTypesQuery() {
-  return useQuery({
-    queryKey: ["unit-types"],
-    queryFn: async () => {
-      const res = await getUnitTypesAction();
-      if (res.error) throw new Error(res.error);
-      return res.data;
-    },
-  });
-}
+import { useMutation } from "@tanstack/react-query";
+import { addUnitTypeAction } from "@/actions/unit_types";
 
 export function useAddUnitTypeMutation() {
   return useMutation({

@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@clerk/nextjs";
-import { useRef, useState } from "react";
+import { use, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,20 +15,28 @@ import {
 import { Combobox } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import type { DbResult, UnitType } from "@/db/types";
 import {
   useAddEquipmentMutation,
   useDeleteEquipmentMutation,
 } from "@/mutations/equipment";
-import { useUnitTypesQuery } from "@/mutations/unit_types";
 
-export function InventoryCreateForm() {
+export function InventoryCreateForm({
+  equipmentTypePromise,
+}: {
+  equipmentTypePromise: Promise<DbResult<UnitType[]>>;
+}) {
   const formRef = useRef<HTMLFormElement>(null);
   const { has } = useAuth();
   const isAdmin = has({ role: "org:admin" });
   const { mutate: addEquipment, isPending } = useAddEquipmentMutation();
-  const { data } = useUnitTypesQuery();
-  const unitTypes = data ?? [];
+  
   const [selectedType, setSelectedType] = useState<string>("Raft");
+
+
+  const data = use(equipmentTypePromise);
+
+  const unitTypes = data.data ?? [];
 
   const unitTypeOptions = unitTypes.map((t) => ({
     label: t.name,

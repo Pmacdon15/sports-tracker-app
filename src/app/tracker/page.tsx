@@ -5,6 +5,7 @@ import { getAllEquipment } from "@/dal/equipment";
 import { getAllGuests } from "@/dal/guests";
 import { getSettings } from "@/dal/settings";
 import { getActiveRentals, getCompletedRentals } from "@/dal/transactions";
+import { getAllUnitTypes } from "@/dal/unit_types";
 
 export default function TrackerPage(props: PageProps<"/tracker">) {
   const rentalsPromise = getActiveRentals();
@@ -22,6 +23,7 @@ export default function TrackerPage(props: PageProps<"/tracker">) {
   });
 
   const guestsPromise = getAllGuests();
+  const equipmentTypePromise =  getAllUnitTypes()
   const equipmentPromise = getAllEquipment();
   const settingsPromise = getSettings();
 
@@ -47,8 +49,9 @@ export default function TrackerPage(props: PageProps<"/tracker">) {
             />
           </Suspense>
         }
-        completedRentalsPromise={completedRentalsPromise}
         equipmentPromise={equipmentPromise}
+        completedRentalsPromise={completedRentalsPromise}
+        equipmentTypePromise={equipmentTypePromise}
         guestsPromise={guestsPromise}
         initialDatePromise={dateStringPromise}
       />
