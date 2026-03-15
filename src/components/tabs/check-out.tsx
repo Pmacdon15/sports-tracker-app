@@ -4,6 +4,7 @@ import React, { use } from "react";
 import { toast } from "sonner";
 import type { DbResult, Equipment, Guest } from "@/db/types";
 import { useCheckoutMutation } from "@/mutations/transactions";
+import { useUnitTypesQuery } from "@/mutations/unit_types";
 import { Button } from "../ui/button";
 import {
   Card,
@@ -15,13 +16,6 @@ import {
 } from "../ui/card";
 import { Combobox } from "../ui/combobox";
 import { Label } from "../ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
 import { TabsContent } from "../ui/tabs";
 
 export default function CheckoutTab({
@@ -40,7 +34,9 @@ export default function CheckoutTab({
 
   const [guestName, setGuestName] = React.useState("");
   const [checkoutUnit, setCheckoutUnit] = React.useState("");
-  const [checkoutType, setCheckoutType] = React.useState("Raft");
+  const [checkoutType, setCheckoutType] = React.useState("");
+
+  const { data: unitTypes = [] } = useUnitTypesQuery();
 
   const availableEqOptions = equipment
     .filter((e) => e.status === "AVAILABLE")
@@ -81,6 +77,11 @@ export default function CheckoutTab({
   const isNewUnit =
     checkoutUnit !== "" &&
     !availableEqOptions.some((opt) => opt.value === checkoutUnit);
+
+  const unitTypeOptions = unitTypes?.map((t) => ({
+    label: t.name,
+    value: t.name,
+  }));
 
   return (
     <TabsContent value="checkout">
@@ -127,22 +128,13 @@ export default function CheckoutTab({
                   <Label className="text-primary font-bold">
                     New Unit Detected - Select Type
                   </Label>
-                  <Select
+                  <Combobox
+                    options={unitTypeOptions}
                     value={checkoutType}
                     onValueChange={setCheckoutType}
-                    required
-                  >
-                    <SelectTrigger className="bg-background">
-                      <SelectValue placeholder="Select type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Raft">Raft</SelectItem>
-                      <SelectItem value="Bike">Bike</SelectItem>
-                      <SelectItem value="Kayak">Kayak</SelectItem>
-                      <SelectItem value="Helmet">Helmet</SelectItem>
-                      <SelectItem value="Paddle">Paddle</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    placeholder="Select or Type Unit Type..."
+                    allowCustom={true}
+                  />
                   <p className="text-xs text-muted-foreground mt-1">
                     This unit will be added to your permanent inventory.
                   </p>

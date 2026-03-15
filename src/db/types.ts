@@ -3,7 +3,7 @@ export interface Equipment {
   type: string;
   unit_number: string;
   org_id: string;
-  status: "AVAILABLE" | "CHECKED_OUT" | "RETIRED"|"DELETED";
+  status: "AVAILABLE" | "CHECKED_OUT" | "RETIRED" | "DELETED";
   created_at: Date;
 }
 
@@ -53,6 +53,13 @@ export interface ExperimentalFeature {
 export interface SystemFeature {
   name: string;
   description: string | null;
+  created_at: Date;
+}
+
+export interface UnitType {
+  id: number;
+  name: string;
+  org_id: string;
   created_at: Date;
 }
 

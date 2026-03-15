@@ -2,12 +2,13 @@ import { auth } from "@clerk/nextjs/server";
 import { addEquipmentDb, getEquipmentByUnitDb } from "@/db/equipment";
 import { createGuestDb, getGuestByNameDb } from "@/db/guests";
 import {
-  checkoutEquipmentDb,
-  getActiveRentalsDb,
-  getCompletedRentalsDb,
-  returnEquipmentDb,
+    checkoutEquipmentDb,
+    getActiveRentalsDb,
+    getCompletedRentalsDb,
+    returnEquipmentDb,
 } from "@/db/transactions";
 import type { DbResult, Transaction } from "@/db/types";
+import { addUnitTypeDb } from "@/db/unit_types";
 
 export async function getActiveRentals(): Promise<DbResult<Transaction[]>> {
   try {
@@ -16,7 +17,7 @@ export async function getActiveRentals(): Promise<DbResult<Transaction[]>> {
 
     const data = await getActiveRentalsDb(orgId);
     return { data, error: null };
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error("Error fetching active rentals:", e);
     return { data: null, error: "Failed to fetch active rentals" };
   }
@@ -32,7 +33,7 @@ export async function getCompletedRentals(
 
     const data = await getCompletedRentalsDb(orgId, date, timezone);
     return { data, error: null };
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error("Error fetching completed rentals:", e);
     return {
       data: null,
@@ -67,6 +68,8 @@ export async function checkoutEquipment(
         );
       }
       equipment = await addEquipmentDb(orgId, type, unit_number);
+      // Ensure the unit type is in the registry
+      await addUnitTypeDb(orgId, type);
     }
 
     if (equipment.status !== "AVAILABLE") {
@@ -80,7 +83,7 @@ export async function checkoutEquipment(
       guest.id,
     );
     return { data, error: null };
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error("Error checking out equipment:", e);
     return { data: null, error: "Failed to checkout equipment" };
   }
@@ -103,7 +106,7 @@ export async function returnEquipment(
 
     const data = await returnEquipmentDb(orgId, equipment.id, userId);
     return { data, error: null };
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error("Error returning equipment:", e);
     return { data: null, error: "Failed to return equipment" };
   }

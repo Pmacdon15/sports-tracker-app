@@ -67,3 +67,11 @@ CREATE TABLE IF NOT EXISTS experimental_features (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (org_id, feature_name)
 );
+
+CREATE TABLE IF NOT EXISTS unit_types (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  org_id VARCHAR(255) NOT NULL REFERENCES organizations(org_id) ON DELETE CASCADE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(name, org_id)
+);

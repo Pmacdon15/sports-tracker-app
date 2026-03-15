@@ -6,6 +6,7 @@ import {
   updateEquipmentStatusDb,
 } from "@/db/equipment";
 import type { DbResult, Equipment } from "@/db/types";
+import { addUnitTypeDb } from "@/db/unit_types";
 
 export async function getAllEquipment(): Promise<DbResult<Equipment[]>> {
   try {
@@ -47,6 +48,7 @@ export async function addEquipment(
     if (!orgId) throw new Error("Organization selection is required.");
 
     const data = await addEquipmentDb(orgId, type, unit_number);
+    await addUnitTypeDb(orgId, type);
     return { data, error: null };
   } catch (e: unknown) {
     console.error("Error adding equipment:", e);
