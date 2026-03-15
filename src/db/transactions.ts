@@ -55,6 +55,7 @@ export async function getCompletedRentalsDb(
 }
 
 export async function checkoutEquipmentDb(
+  userId: string,
   orgId: string,
   equipmentId: number,
   guestId: number,
@@ -64,8 +65,8 @@ export async function checkoutEquipmentDb(
     WITH update_eq AS (
       UPDATE equipment SET status = 'CHECKED_OUT' WHERE id = ${equipmentId} RETURNING id
     )
-    INSERT INTO transactions (equipment_id, guest_id, status, org_id) 
-    VALUES ((SELECT id FROM update_eq), ${guestId}, 'OUT', ${orgId}) 
+    INSERT INTO transactions (equipment_id, guest_id, status, org_id, checked_out_by) 
+    VALUES ((SELECT id FROM update_eq), ${guestId}, 'OUT', ${orgId}, ${userId}) 
     RETURNING *
   `;
   return res[0] as unknown as Transaction;
@@ -74,7 +75,7 @@ export async function checkoutEquipmentDb(
 export async function returnEquipmentDb(
   orgId: string,
   equipmentId: number,
-  userId: string // Passing the user ID from the Server Action
+  userId: string, // Passing the user ID from the Server Action
 ): Promise<Transaction> {
   const sql = getSql();
   const res = await sql`
@@ -94,6 +95,6 @@ export async function returnEquipmentDb(
       AND org_id = ${orgId}
     RETURNING *
   `;
-  
+
   return (res[0] as unknown as Transaction) || null;
 }

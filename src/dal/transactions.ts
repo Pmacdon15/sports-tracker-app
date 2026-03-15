@@ -47,7 +47,7 @@ export async function checkoutEquipment(
   type?: string,
 ): Promise<DbResult<Transaction>> {
   try {
-    const { orgId } = await auth.protect();
+    const { orgId, userId } = await auth.protect();
     if (!orgId) throw new Error("Organization selection is required.");
 
     let guest = await getGuestByNameDb(orgId, guest_name);
@@ -73,7 +73,12 @@ export async function checkoutEquipment(
       throw new Error(`Equipment ${unit_number} is ${equipment.status}.`);
     }
 
-    const data = await checkoutEquipmentDb(orgId, equipment.id, guest.id);
+    const data = await checkoutEquipmentDb(
+      userId,
+      orgId,
+      equipment.id,
+      guest.id,
+    );
     return { data, error: null };
   } catch (e: any) {
     console.error("Error checking out equipment:", e);
@@ -83,7 +88,7 @@ export async function checkoutEquipment(
 
 export async function returnEquipment(
   unit_number: string,
-  userId:string
+  userId: string,
 ): Promise<DbResult<Transaction>> {
   try {
     const { orgId } = await auth.protect();
