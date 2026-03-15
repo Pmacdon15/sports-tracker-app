@@ -1,9 +1,9 @@
 import { auth } from "@clerk/nextjs/server";
 import {
   addEquipmentDb,
-  deleteEquipmentDb,
   getAllEquipmentDb,
   getEquipmentByUnitDb,
+  updateEquipmentStatusDb,
 } from "@/db/equipment";
 import type { DbResult, Equipment } from "@/db/types";
 
@@ -56,12 +56,12 @@ export async function addEquipment(
 
 export async function deleteEquipment(
   unit_number: string,
-): Promise<DbResult<boolean>> {
+): Promise<DbResult<Equipment>> {
   try {
-   const { orgId } = await auth.protect();
+    const { orgId } = await auth.protect();
     if (!orgId) throw new Error("Organization selection is required.");
 
-    const data = await deleteEquipmentDb(orgId, unit_number);
+    const data = await updateEquipmentStatusDb(orgId, unit_number, "DELETED");
     return { data, error: null };
   } catch (e: unknown) {
     console.error("Error deleting equipment:", e);

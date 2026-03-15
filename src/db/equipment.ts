@@ -8,7 +8,7 @@ export async function getAllEquipmentDb(orgId: string): Promise<Equipment[]> {
   const sql = getSql();
   const res = await sql`
     SELECT * FROM equipment 
-    WHERE org_id = ${orgId} 
+    WHERE org_id = ${orgId} AND status != 'DELETED'
     ORDER BY unit_number ASC
   `;
   return res as unknown as Equipment[];
@@ -22,8 +22,7 @@ export async function getEquipmentByUnitDb(
   const sql = getSql();
   const res = await sql`
     SELECT * FROM equipment 
-    WHERE unit_number = ${unit_number} AND org_id = ${orgId}
-  `;
+    WHERE unit_number = ${unit_number} AND org_id = ${orgId}   `;
   return (res[0] as unknown as Equipment) || null;
 }
 
@@ -45,7 +44,7 @@ export async function updateEquipmentStatusDb(
   orgId: string,
   unit_number: string,
   status: string,
-): Promise<Equipment | null> {
+): Promise<Equipment> {
   const sql = getSql();
   const res = await sql`
     UPDATE equipment 
@@ -53,7 +52,7 @@ export async function updateEquipmentStatusDb(
     WHERE unit_number = ${unit_number} AND org_id = ${orgId} 
     RETURNING *
   `;
-  return (res[0] as unknown as Equipment) || null;
+  return (res[0] as unknown as Equipment);
 }
 
 export async function deleteEquipmentDb(

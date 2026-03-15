@@ -3,7 +3,7 @@ export interface Equipment {
   type: string;
   unit_number: string;
   org_id: string;
-  status: "AVAILABLE" | "CHECKED_OUT" | "RETIRED";
+  status: "AVAILABLE" | "CHECKED_OUT" | "RETIRED"|"DELETED";
   created_at: Date;
 }
 
@@ -22,7 +22,7 @@ export interface Transaction {
   checked_out_at: Date;
   checked_in_at: Date | null;
   status: "OUT" | "RETURNED";
-  equipment_unit?: string;
+  equipment_unit: string;
   equipment_type?: string;
   guest_name?: string;
 }

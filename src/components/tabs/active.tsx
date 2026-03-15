@@ -91,7 +91,7 @@ export default function ActiveTab({
                       {formatDuration(rental.checked_out_at)}
                     </span>
                   </div>
-                  <ReturnButton equipment_unit={rental.equipment_unit!} />
+                  <ReturnButton equipment_unit={rental.equipment_unit} />
                 </div>
               ))}
             </div>

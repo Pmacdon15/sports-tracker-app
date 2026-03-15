@@ -1,5 +1,6 @@
 import { InventoryDeleteButton } from "@/app/inventory/client";
 import type { DbResult, Equipment } from "@/db/types";
+import { AlertDialogDestructive } from "../dialogs/delete-inventory";
 import { CardContent } from "../ui/card";
 
 export default async function EquipmentContent({
@@ -43,7 +44,9 @@ export default async function EquipmentContent({
                 </span>
               </span>
             </div>
-            <InventoryDeleteButton unit_number={eq.unit_number} />
+            <AlertDialogDestructive>
+              <InventoryDeleteButton unit_number={eq.unit_number} />
+            </AlertDialogDestructive>
           </div>
         ))}
         {equipment.length === 0 && (

@@ -1,7 +1,6 @@
 "use client";
 
 import { useAuth } from "@clerk/nextjs";
-import { Trash2 } from "lucide-react";
 import { useRef } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -115,13 +114,13 @@ export function InventoryDeleteButton({
   const isAdmin = has({ role: "org:admin" });
 
   const { mutate: deleteEq, isPending } = useDeleteEquipmentMutation();
-  
+
   if (!isAdmin) return null;
   return (
     <Button
       type="button"
-      variant="ghost"
-      size="icon"
+      variant="destructive"
+      // size="icon"
       className="text-destructive hover:bg-destructive/10"
       onClick={() => {
         deleteEq(unit_number, {
@@ -131,7 +130,7 @@ export function InventoryDeleteButton({
       }}
       disabled={isPending}
     >
-      <Trash2 className="w-4 h-4" />
+      Delete
     </Button>
   );
 }
