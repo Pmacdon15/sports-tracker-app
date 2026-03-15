@@ -74,16 +74,26 @@ export async function checkoutEquipmentDb(
 export async function returnEquipmentDb(
   orgId: string,
   equipmentId: number,
+  userId: string // Passing the user ID from the Server Action
 ): Promise<Transaction> {
   const sql = getSql();
   const res = await sql`
     WITH update_eq AS (
-      UPDATE equipment SET status = 'AVAILABLE' WHERE id = ${equipmentId} RETURNING id
+      UPDATE equipment 
+      SET status = 'AVAILABLE' 
+      WHERE id = ${equipmentId} 
+      RETURNING id
     )
     UPDATE transactions 
-    SET status = 'RETURNED', checked_in_at = CURRENT_TIMESTAMP 
-    WHERE equipment_id = (SELECT id FROM update_eq) AND status = 'OUT' AND org_id = ${orgId}
+    SET 
+      status = 'RETURNED', 
+      checked_in_at = CURRENT_TIMESTAMP,
+      checked_in_by = ${userId}
+    WHERE equipment_id = (SELECT id FROM update_eq) 
+      AND status = 'OUT' 
+      AND org_id = ${orgId}
     RETURNING *
   `;
-  return res[0] as unknown as Transaction;
+  
+  return (res[0] as unknown as Transaction) || null;
 }

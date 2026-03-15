@@ -83,6 +83,7 @@ export async function checkoutEquipment(
 
 export async function returnEquipment(
   unit_number: string,
+  userId:string
 ): Promise<DbResult<Transaction>> {
   try {
     const { orgId } = await auth.protect();
@@ -95,7 +96,7 @@ export async function returnEquipment(
       throw new Error(`Equipment ${unit_number} is not checked out.`);
     }
 
-    const data = await returnEquipmentDb(orgId, equipment.id);
+    const data = await returnEquipmentDb(orgId, equipment.id, userId);
     return { data, error: null };
   } catch (e: any) {
     console.error("Error returning equipment:", e);

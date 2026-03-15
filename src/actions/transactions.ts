@@ -24,10 +24,10 @@ export async function checkoutEquipmentAction(
 export async function returnEquipmentAction(
   unit_number: string,
 ): Promise<DbResult<Transaction>> {
-  const { orgId } = await auth.protect();
+  const { orgId, userId } = await auth.protect();
   if (!orgId) throw new Error("Unauthorized");
 
-  const res = await returnEquipment(unit_number);
+  const res = await returnEquipment(unit_number, userId);
   if (!res.error) {
     updateTag(`active-rentals-${orgId}`);
     updateTag(`completed-rentals-${orgId}`);

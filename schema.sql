@@ -38,6 +38,7 @@ CREATE TABLE IF NOT EXISTS transactions (
   org_id VARCHAR(255) NOT NULL,
   checked_out_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   checked_in_at TIMESTAMP,
+  checked_in_by VARCHAR(30) 
   status VARCHAR(20) DEFAULT 'OUT' -- 'OUT', 'RETURNED'
 );
 
