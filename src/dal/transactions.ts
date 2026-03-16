@@ -112,10 +112,9 @@ export async function checkoutEquipment(
 
 export async function returnEquipment(
   unit_number: string,
-  userId: string, 
 ): Promise<DbResult<Transaction>> {
   try {
-    const { orgId } = await auth.protect();
+    const { orgId , userId} = await auth.protect();
     if (!orgId) throw new Error("Organization selection is required.");
 
     const equipment = await getEquipmentByUnitDb(orgId, unit_number);

@@ -10,7 +10,6 @@ import { addUnitTypeDb } from "@/db/unit_types";
 
 export async function getAllEquipment(): Promise<DbResult<Equipment[]>> {
   try {
-         
     const { orgId } = await auth.protect();
     if (!orgId) throw new Error("Organization selection is required.");
 
@@ -62,8 +61,9 @@ export async function deleteEquipment(
   unit_number: string,
 ): Promise<DbResult<Equipment>> {
   try {
-    const { orgId } = await auth.protect();
-    if (!orgId) throw new Error("Organization selection is required.");
+    const { orgId, has } = await auth.protect();
+    const isAdmin = has({ role: "org:admin" });
+    if (!orgId || !isAdmin) throw new Error("Unauthorized");
 
     const data = await updateEquipmentStatusDb(orgId, unit_number, "DELETED");
     return { data, error: null };
@@ -77,8 +77,9 @@ export async function retireEquipment(
   unit_number: string,
 ): Promise<DbResult<Equipment>> {
   try {
-    const { orgId } = await auth.protect();
-    if (!orgId) throw new Error("Organization selection is required.");
+    const { orgId, has } = await auth.protect();
+    const isAdmin = has({ role: "org:admin" });
+    if (!orgId || !isAdmin) throw new Error("Unauthorized");
 
     const data = await updateEquipmentStatusDb(orgId, unit_number, "RETIRED");
     return { data, error: null };

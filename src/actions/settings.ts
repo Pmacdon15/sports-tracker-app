@@ -1,20 +1,16 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
 import { updateTag } from "next/cache";
 import { updateSetting } from "@/dal/settings";
-import type { DbResult } from "@/db/types";
+import type { DbResult, Setting } from "@/db/types";
 
 export async function updateSettingAction(
   key: string,
   value: string,
-): Promise<DbResult<void>> {
-  const { orgId } = await auth.protect();
-  if (!orgId) throw new Error("Unauthorized");
-
+): Promise<DbResult<Setting>> {
   const res = await updateSetting(key, value);
   if (!res.error) {
-    updateTag(`settings-${orgId}`);
+    updateTag(`settings-${res.data?.org_id}`);
   }
   return res;
 }

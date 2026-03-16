@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { getSettingsDb, updateSettingDb } from "@/db/settings";
-import type { DbResult } from "@/db/types";
+import type { DbResult, Setting } from "@/db/types";
 
 export async function getSettings(): Promise<DbResult<Record<string, string>>> {
   try {
@@ -25,14 +25,14 @@ export async function getSettings(): Promise<DbResult<Record<string, string>>> {
 export async function updateSetting(
   key: string,
   value: string,
-): Promise<DbResult<void>> {
+): Promise<DbResult<Setting>> {
   try {
     const { orgId, has } = await auth.protect();
     if (!orgId) throw new Error("Organization selection is required.");
     if (!has({ role: "org:admin" })) throw new Error("not Admin");
 
-    await updateSettingDb(orgId, key, value);
-    return { data: undefined, error: null };
+    const data = await updateSettingDb(orgId, key, value);
+    return { data: data, error: null };
   } catch (e: unknown) {
     console.error(`Error updating setting ${key}:`, e);
     return { data: null, error: "Failed to update setting" };

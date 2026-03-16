@@ -17,12 +17,15 @@ export async function updateSettingDb(
   orgId: string,
   key: string,
   value: string,
-): Promise<void> {
+): Promise<Setting> {
   const sql = getSql();
-  await sql`
+  const res = await sql`
     INSERT INTO settings (key, value, org_id) 
     VALUES (${key}, ${value}, ${orgId}) 
     ON CONFLICT (key, org_id) 
     DO UPDATE SET value = EXCLUDED.value, updated_at = CURRENT_TIMESTAMP
+    RETURNING *
   `;
+
+  return (res[0] as unknown as Setting);
 }
