@@ -54,6 +54,7 @@ export default function TrackerPage(props: PageProps<"/tracker">) {
         equipmentTypePromise={equipmentTypePromise}
         guestsPromise={guestsPromise}
         initialDatePromise={dateStringPromise}
+        settingsPromise={settingsPromise}
       />
     </div>
   );

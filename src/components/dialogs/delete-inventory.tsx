@@ -21,9 +21,9 @@ export function AlertDialogDestructive({
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button 
-          variant="ghost" 
-          size="icon-sm" 
+        <Button
+          variant="ghost"
+          size="icon-sm"
           className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors rounded-full"
         >
           <Trash2 className="w-4 h-4" />
@@ -31,8 +31,10 @@ export function AlertDialogDestructive({
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <Trash2Icon className="text-destructive hover:bg-destructive/10" />
-          <AlertDialogTitle>Delete equipment?</AlertDialogTitle>
+          <div className="flex items-center gap-2 text-red-600">
+            <Trash2Icon className="text-destructive hover:bg-destructive/10" />
+            <AlertDialogTitle>Delete equipment?</AlertDialogTitle>
+          </div>
           <AlertDialogDescription>
             This will permanently delete this equipment from inventory. View{" "}
             <Link href="/settings">Settings</Link>

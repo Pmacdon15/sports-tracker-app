@@ -15,6 +15,7 @@ export function TrackerTabs({
   equipmentTypePromise,
   guestsPromise,
   initialDatePromise,
+  settingsPromise,
 }: {
   activeTab: React.ReactNode;
   completedRentalsPromise: Promise<DbResult<Transaction[]>>;
@@ -22,6 +23,7 @@ export function TrackerTabs({
   equipmentTypePromise: Promise<DbResult<UnitType[]>>
   guestsPromise: Promise<DbResult<Guest[]>>;
   initialDatePromise: Promise<string | undefined>;
+  settingsPromise: Promise<DbResult<Record<string, string>>>;
 }) {
   return (
     <Tabs defaultValue="checkout" className="w-full max-w-4xl mx-auto">
@@ -45,6 +47,7 @@ export function TrackerTabs({
         <ReturnsTab
           completedRentalsPromise={completedRentalsPromise}
           initialDatePromise={initialDatePromise}
+          settingsPromise={settingsPromise}
         />
       </Suspense>
     </Tabs>
