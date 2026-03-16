@@ -78,14 +78,25 @@ export function Navbar() {
           </NavigationMenuLink>
         </NavigationMenuItem>
         {isAdmin && (
-          <NavigationMenuItem>
-            <NavigationMenuLink
-              asChild
-              className={navigationMenuTriggerStyle()}
-            >
-              <Link href="/settings">Settings</Link>
-            </NavigationMenuLink>
-          </NavigationMenuItem>
+          <>
+            <NavigationMenuItem>
+              <NavigationMenuLink
+                asChild
+                className={navigationMenuTriggerStyle()}
+              >
+                <Link href="/guests">Guests</Link>
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+
+            <NavigationMenuItem>
+              <NavigationMenuLink
+                asChild
+                className={navigationMenuTriggerStyle()}
+              >
+                <Link href="/settings">Settings</Link>
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+          </>
         )}
       </Show>
     </>
@@ -207,13 +218,23 @@ export function Navbar() {
                     Inventory
                   </Link>
                   {isAdmin && (
-                    <Link
-                      href="/settings"
-                      onClick={() => setIsOpen(false)}
-                      className="hover:text-primary pl-1 font-medium"
-                    >
-                      Settings
-                    </Link>
+                    <>
+                      <Link
+                        href="/guests"
+                        onClick={() => setIsOpen(false)}
+                        className="hover:text-primary pl-1 font-medium"
+                      >
+                        Guests
+                      </Link>
+
+                      <Link
+                        href="/settings"
+                        onClick={() => setIsOpen(false)}
+                        className="hover:text-primary pl-1 font-medium"
+                      >
+                        Settings
+                      </Link>
+                    </>
                   )}
                 </Show>
               </div>

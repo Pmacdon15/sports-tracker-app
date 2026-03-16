@@ -1,6 +1,6 @@
 "use client";
 
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   checkoutEquipmentAction,
   returnEquipmentAction,
@@ -25,13 +25,18 @@ export function useCheckoutMutation() {
   });
 }
 
-export function useReturnMutation() {
+export function useReturnMutation(search?: string) {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (unit_number: string) => {
       const res = await returnEquipmentAction(unit_number);
       if (res.error) throw new Error(res.error);
       return res.data;
     },
-    onSuccess: () => {},
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["guest-stats-infinite", search],
+      });
+    },
   });
 }

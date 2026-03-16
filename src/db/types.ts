@@ -66,3 +66,16 @@ export interface UnitType {
 export type DbResult<T> =
   | { data: T; error: null }
   | { data: null; error: string };
+
+export interface GuestStats {
+  id: number;
+  name: string;
+  trip_count: number;
+  last_trip_at: Date | null;
+}
+
+export interface GlobalGuestStats {
+  total_guests: number;
+  total_trips: number;
+  avg_trips_per_guest: number;
+}
