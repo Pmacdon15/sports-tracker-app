@@ -35,13 +35,13 @@ export default function GuestsPage() {
               <CardHeader>
                 <CardTitle>Guest Engagement</CardTitle>
               </CardHeader>
-              <Suspense
+              {/* <Suspense
                 fallback={
                   <div className="h-96 bg-muted/20 animate-pulse rounded-xl m-6" />
                 }
-              >
-                <GuestStatsContent />
-              </Suspense>
+              > */}
+              <GuestStatsContent />
+              {/* </Suspense> */}
             </Card>
           </div>
 

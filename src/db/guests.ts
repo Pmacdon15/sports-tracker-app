@@ -1,4 +1,4 @@
-import { cacheTag } from "next/cache";
+import { cacheTag, updateTag } from "next/cache";
 import { getSql } from "./db";
 import type { GlobalGuestStats, Guest, GuestStats } from "./types";
 
@@ -35,6 +35,9 @@ export async function createGuestDb(
     ON CONFLICT (name, org_id) DO NOTHING 
     RETURNING *
   `;
+  if (res[0].length < 1) throw new Error("Unable to add new guest");
+  updateTag(`guest-stats-${orgId}`);
+  updateTag(`guest-global-stats-${orgId}`);
   return res[0] as unknown as Guest;
 }
 
@@ -67,7 +70,7 @@ export async function getGlobalGuestStatsDb(
   orgId: string,
 ): Promise<GlobalGuestStats> {
   "use cache";
-  cacheTag(`guest-stats-${orgId}`);
+  cacheTag(`guest-global-stats-${orgId}`);
   const sql = getSql();
   const res = await sql`
     SELECT 

@@ -1,5 +1,9 @@
 import { auth } from "@clerk/nextjs/server";
-import { getAllGuestsDb, getMockGuestStats } from "@/db/guests";
+import {
+  getAllGuestsDb,
+  getGlobalGuestStatsDb,
+  getGuestStatsDb,
+} from "@/db/guests";
 import type { DbResult, GlobalGuestStats, Guest, GuestStats } from "@/db/types";
 
 export async function getAllGuests(): Promise<DbResult<Guest[]>> {
@@ -24,12 +28,11 @@ export async function getGuestStats(
     const { orgId } = await auth.protect();
     if (!orgId) throw new Error("Unauthorized");
 
-    // REAL FUNCTION (Commented out for mock demonstration)
-    // const offset = (page - 1) * limit;
-    // const data = await getGuestStatsDb(orgId, limit, offset, search);
+    const offset = (page - 1) * limit;
+    const data = await getGuestStatsDb(orgId, limit, offset, search);
 
     // MOCK FUNCTION for UI demonstration
-    const data = getMockGuestStats(page, limit, search);
+    // const data = getMockGuestStats(page, limit, search);
 
     return { data, error: null };
   } catch (e: unknown) {
@@ -46,14 +49,14 @@ export async function getGlobalGuestStats(): Promise<
     if (!orgId) throw new Error("Unauthorized");
 
     // REAL FUNCTION (Commented out for mock demonstration)
-    // const data = await getGlobalGuestStatsDb(orgId);
+    const data = await getGlobalGuestStatsDb(orgId);
 
     // MOCK FUNCTION for UI demonstration
-    const data: GlobalGuestStats = {
-      total_guests: 5,
-      total_trips: 43,
-      avg_trips_per_guest: 8.6,
-    };
+    // const data: GlobalGuestStats = {
+    //   total_guests: 5,
+    //   total_trips: 43,
+    //   avg_trips_per_guest: 8.6,
+    // };
 
     return { data, error: null };
   } catch (e: unknown) {
