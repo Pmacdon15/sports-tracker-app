@@ -6,6 +6,7 @@ import { Suspense } from "react";
 import { Toaster } from "sonner";
 import { Navbar } from "@/components/layout/Navbar";
 import { Providers } from "./providers";
+import { TooltipProvider } from "@radix-ui/react-tooltip";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,7 +38,10 @@ export default function RootLayout({
             <Suspense>
               <Navbar />
             </Suspense>
-            <main className="flex-1 flex flex-col">{children}</main>
+            <main className="flex-1 flex flex-col">
+              {" "}
+              <TooltipProvider>{children}</TooltipProvider>
+            </main>
             <Toaster richColors position="bottom-right" />
           </Providers>
         </body>

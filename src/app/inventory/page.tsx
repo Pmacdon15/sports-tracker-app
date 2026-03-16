@@ -1,11 +1,13 @@
 import { Suspense } from "react";
+import EquipmentListFallback from "@/components/fallbacks/equipment-list-fallback";
+import InventoryCreateFormFallback from "@/components/fallbacks/inventory-create-form-fallback";
 import InventoryTotalHeaderFallback from "@/components/fallbacks/inventroy-total-header-fallback";
 import EquipmentContent from "@/components/inventory/equipment-content";
+import { InventoryCreateForm } from "@/components/inventory/inventory-create-form";
 import InventoryTotalHeader from "@/components/inventory/inventory-total-header";
 import { Card, CardHeader } from "@/components/ui/card";
 import { getAllEquipment } from "@/dal/equipment";
 import { getAllUnitTypes } from "@/dal/unit_types";
-import { InventoryCreateForm } from "./client";
 
 export default function InventoryPage() {
   const equipmentPromise = getAllEquipment();
@@ -28,7 +30,7 @@ export default function InventoryPage() {
       </div>
 
       <div className="grid md:grid-cols-3 gap-8">
-        <Suspense>
+        <Suspense fallback={<InventoryCreateFormFallback />}>
           <InventoryCreateForm equipmentTypePromise={equipmentTypePromise} />
         </Suspense>
 
@@ -41,7 +43,7 @@ export default function InventoryPage() {
                 />
               </Suspense>
             </CardHeader>
-            <Suspense>
+            <Suspense fallback={<EquipmentListFallback />}>
               <EquipmentContent equipmentPromise={equipmentPromise} />
             </Suspense>
           </Card>

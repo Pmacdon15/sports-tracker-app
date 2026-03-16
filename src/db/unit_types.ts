@@ -10,7 +10,7 @@ export async function getAllUnitTypesDb(orgId: string): Promise<UnitType[]> {
     SELECT * FROM unit_types 
     WHERE org_id = ${orgId} 
     ORDER BY name ASC
-  `;
+  `;  
   return res as unknown as UnitType[];
 }
 

@@ -10,10 +10,12 @@ import { addUnitTypeDb } from "@/db/unit_types";
 
 export async function getAllEquipment(): Promise<DbResult<Equipment[]>> {
   try {
+         
     const { orgId } = await auth.protect();
     if (!orgId) throw new Error("Organization selection is required.");
 
     const data = await getAllEquipmentDb(orgId);
+    // const data = await getMockEquipment(orgId);
     return { data, error: null };
   } catch (e: unknown) {
     console.error("Error fetching all equipment:", e);
@@ -68,5 +70,20 @@ export async function deleteEquipment(
   } catch (e: unknown) {
     console.error("Error deleting equipment:", e);
     return { data: null, error: "Failed to delete equipment" };
+  }
+}
+
+export async function retireEquipment(
+  unit_number: string,
+): Promise<DbResult<Equipment>> {
+  try {
+    const { orgId } = await auth.protect();
+    if (!orgId) throw new Error("Organization selection is required.");
+
+    const data = await updateEquipmentStatusDb(orgId, unit_number, "RETIRED");
+    return { data, error: null };
+  } catch (e: unknown) {
+    console.error("Error retiring equipment:", e);
+    return { data: null, error: "Failed to retire equipment" };
   }
 }

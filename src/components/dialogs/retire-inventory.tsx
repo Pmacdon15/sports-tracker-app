@@ -1,4 +1,4 @@
-import { Trash2, Trash2Icon } from "lucide-react";
+import { Archive, ArchiveIcon } from "lucide-react";
 import Link from "next/link";
 import {
   AlertDialog,
@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "../ui/button";
 
-export function AlertDialogDestructive({
+export function AlertDialogRetire({
   children,
 }: {
   children: React.ReactNode;
@@ -24,18 +24,20 @@ export function AlertDialogDestructive({
         <Button 
           variant="ghost" 
           size="icon-sm" 
-          className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors rounded-full"
+          className="text-muted-foreground hover:text-amber-600 hover:bg-amber-50 transition-colors rounded-full"
         >
-          <Trash2 className="w-4 h-4" />
+          <Archive className="w-4 h-4" />
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <Trash2Icon className="text-destructive hover:bg-destructive/10" />
-          <AlertDialogTitle>Delete equipment?</AlertDialogTitle>
+          <div className="flex items-center gap-2 text-amber-600">
+            <ArchiveIcon className="w-5 h-5" />
+            <AlertDialogTitle>Retire equipment?</AlertDialogTitle>
+          </div>
           <AlertDialogDescription>
-            This will permanently delete this equipment from inventory. View{" "}
-            <Link href="/settings">Settings</Link>
+            This will mark the equipment as retired. It will still be in the system but not available for check-out. View{" "}
+            <Link href="/settings" className="underline underline-offset-4">Settings</Link>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

@@ -14,11 +14,30 @@ export async function getAllEquipmentDb(orgId: string): Promise<Equipment[]> {
   return res as unknown as Equipment[];
 }
 
+export function getMockEquipment(orgId: string): Equipment[] {
+  const types = ["Raft", "Bike", "Helmet", "Paddle", "Life Jacket"];
+  const statuses: Equipment["status"][] = ["AVAILABLE", "CHECKED_OUT", "RETIRED"];
+
+  return Array.from({ length: 100 }, (_, i) => {
+    const id = i + 1;
+    const type = types[Math.floor(Math.random() * types.length)];
+    
+    return {
+      id,
+      org_id: orgId,
+      type,
+      // Generates padded numbers like "001", "002"...
+      unit_number: `${type.substring(0, 1).toUpperCase()}-${String(id).padStart(3, "0")}`,
+      status: statuses[Math.floor(Math.random() * statuses.length)],
+      created_at: new Date(Date.now() - Math.floor(Math.random() * 1000000000)),
+    };
+  });
+}
+
 export async function getEquipmentByUnitDb(
   orgId: string,
   unit_number: string,
-): Promise<Equipment | null> {
-  console.log("Data: ", unit_number);
+): Promise<Equipment | null> { 
   const sql = getSql();
   const res = await sql`
     SELECT * FROM equipment 

@@ -1,6 +1,5 @@
-import { InventoryDeleteButton } from "@/app/inventory/client";
+import { EquipmentList } from "@/components/inventory/client";
 import type { DbResult, Equipment } from "@/db/types";
-import { AlertDialogDestructive } from "../dialogs/delete-inventory";
 import { CardContent } from "../ui/card";
 
 export default async function EquipmentContent({
@@ -10,7 +9,7 @@ export default async function EquipmentContent({
 }) {
   const { data: equipment, error } = await equipmentPromise;
 
-  if (error) {
+  if (error !== null) {
     return (
       <CardContent className="py-12 text-center text-destructive">
         {error}
@@ -18,43 +17,13 @@ export default async function EquipmentContent({
     );
   }
 
-  if (!equipment) return null;
-  return (
-    <CardContent>
-      <div className="grid sm:grid-cols-2 gap-3">
-        {equipment.map((eq) => (
-          <div
-            key={eq.id}
-            className="flex justify-between items-center p-3 border rounded border-border/50 bg-secondary/10"
-          >
-            <div className="flex flex-col gap-0.5">
-              <span className="font-bold text-foreground">
-                {eq.unit_number}
-              </span>
-              <span className="text-xs text-muted-foreground">
-                {eq.type} &bull;{" "}
-                <span
-                  className={
-                    eq.status === "AVAILABLE"
-                      ? "text-green-600"
-                      : "text-blue-600"
-                  }
-                >
-                  {eq.status}
-                </span>
-              </span>
-            </div>
-            <AlertDialogDestructive>
-              <InventoryDeleteButton unit_number={eq.unit_number} />
-            </AlertDialogDestructive>
-          </div>
-        ))}
-        {equipment.length === 0 && (
-          <div className="col-span-full py-12 text-center text-muted-foreground border border-dashed rounded-lg">
-            Warehouse is empty. Start adding equipment.
-          </div>
-        )}
-      </div>
-    </CardContent>
-  );
+  if (equipment.length < 1) {
+    return (
+      <CardContent className="py-12 text-center text-destructive">
+        Please add Equipment
+      </CardContent>
+    );
+  }
+
+  return <EquipmentList initialEquipment={equipment} />;
 }

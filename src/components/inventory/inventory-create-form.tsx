@@ -3,7 +3,6 @@
 import { useAuth } from "@clerk/nextjs";
 import { use, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -16,10 +15,8 @@ import { Combobox } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { DbResult, UnitType } from "@/db/types";
-import {
-  useAddEquipmentMutation,
-  useDeleteEquipmentMutation,
-} from "@/mutations/equipment";
+import { useAddEquipmentMutation } from "@/mutations/equipment";
+import { Button } from "../ui/button";
 
 export function InventoryCreateForm({
   equipmentTypePromise,
@@ -30,9 +27,8 @@ export function InventoryCreateForm({
   const { has } = useAuth();
   const isAdmin = has({ role: "org:admin" });
   const { mutate: addEquipment, isPending } = useAddEquipmentMutation();
-  
-  const [selectedType, setSelectedType] = useState<string>("Raft");
 
+  const [selectedType, setSelectedType] = useState<string>("Raft");
 
   const data = use(equipmentTypePromise);
 
@@ -103,35 +99,5 @@ export function InventoryCreateForm({
       </Card>
     </div>
     // </div>
-  );
-}
-
-export function InventoryDeleteButton({
-  unit_number,
-}: {
-  unit_number: string;
-}) {
-  const { has } = useAuth();
-  const isAdmin = has({ role: "org:admin" });
-
-  const { mutate: deleteEq, isPending } = useDeleteEquipmentMutation();
-
-  if (!isAdmin) return null;
-  return (
-    <Button
-      type="button"
-      variant="destructive"
-      // size="icon"
-      className="text-destructive hover:bg-destructive/10"
-      onClick={() => {
-        deleteEq(unit_number, {
-          onSuccess: () => toast.success(`Deleted equipment ${unit_number}`),
-          onError: (error: Error) => toast.error(error.message),
-        });
-      }}
-      disabled={isPending}
-    >
-      Delete
-    </Button>
   );
 }

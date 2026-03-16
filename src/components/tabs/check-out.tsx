@@ -23,7 +23,7 @@ export default function CheckoutTab({
   guestsPromise,
 }: {
   equipmentPromise: Promise<DbResult<Equipment[]>>;
-  equipmentTypePromise: Promise<DbResult<UnitType[]>>
+  equipmentTypePromise: Promise<DbResult<UnitType[]>>;
   guestsPromise: Promise<DbResult<Guest[]>>;
 }) {
   const guestsRes = use(guestsPromise);
@@ -32,14 +32,13 @@ export default function CheckoutTab({
 
   const guests = guestsRes.data || [];
   const equipment = equipmentRes.data || [];
-  const unitTypes = equipmentType.data || []
+  const unitTypes = equipmentType.data || [];
   const error = guestsRes.error || equipmentRes.error;
 
   const [guestName, setGuestName] = React.useState("");
   const [checkoutUnit, setCheckoutUnit] = React.useState("");
   const [checkoutType, setCheckoutType] = React.useState("");
 
-  
   const availableEqOptions = equipment
     .filter((e) => e.status === "AVAILABLE")
     .map((e) => ({
@@ -131,7 +130,7 @@ export default function CheckoutTab({
                     New Unit Detected - Select Type
                   </Label>
                   <Combobox
-                    options={unitTypeOptions||[]}
+                    options={unitTypeOptions || []}
                     value={checkoutType}
                     onValueChange={setCheckoutType}
                     placeholder="Select or Type Unit Type..."

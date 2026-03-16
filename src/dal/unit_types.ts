@@ -3,7 +3,7 @@ import type { DbResult, UnitType } from "@/db/types";
 import { addUnitTypeDb, getAllUnitTypesDb } from "@/db/unit_types";
 
 export async function getAllUnitTypes(): Promise<DbResult<UnitType[]>> {
-  try {
+  try {    
     const { orgId } = await auth.protect();
     if (!orgId) throw new Error("Organization selection is required.");
 

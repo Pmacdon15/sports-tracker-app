@@ -23,7 +23,7 @@ export default function TrackerPage(props: PageProps<"/tracker">) {
   });
 
   const guestsPromise = getAllGuests();
-  const equipmentTypePromise =  getAllUnitTypes()
+  const equipmentTypePromise = getAllUnitTypes();
   const equipmentPromise = getAllEquipment();
   const settingsPromise = getSettings();
 

@@ -1,0 +1,35 @@
+"use client";
+
+import { useAuth } from "@clerk/nextjs";
+import { toast } from "sonner";
+import { useRetireEquipmentMutation } from "@/mutations/equipment";
+import { Button } from "../ui/button";
+
+export function InventoryRetireButton({
+  unit_number,
+}: {
+  unit_number: string;
+}) {
+  const { has } = useAuth();
+  const isAdmin = has({ role: "org:admin" });
+
+  const { mutate: retireEq, isPending } = useRetireEquipmentMutation();
+
+  if (!isAdmin) return null;
+  return (
+    <Button
+      type="button"
+      variant="destructive"
+      className="text-destructive hover:bg-destructive/10"
+      onClick={() => {
+        retireEq(unit_number, {
+          onSuccess: () => toast.success(`Retired equipment ${unit_number}`),
+          onError: (error: Error) => toast.error(error.message),
+        });
+      }}
+      disabled={isPending}
+    >
+      Retire
+    </Button>
+  );
+}

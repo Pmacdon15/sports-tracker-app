@@ -17,6 +17,7 @@ export async function checkoutEquipmentAction(
   if (!res.error) {
     updateTag(`active-rentals-${orgId}`);
     updateTag(`equipment-${orgId}`);
+    updateTag(`unit-types-${orgId}`);
   }
   return res;
 }

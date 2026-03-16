@@ -51,7 +51,7 @@ export function Combobox({
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[300px] p-0" align="start">
+      <PopoverContent className="w-75 p-0" align="start">
         <Command>
           <CommandInput
             placeholder={`Search ${placeholder.toLowerCase()}...`}
@@ -61,15 +61,15 @@ export function Combobox({
           <CommandList>
             <CommandEmpty>
               {allowCustom && inputValue.trim() !== "" ? (
-                <div
-                  className="p-2 text-sm max-w-full truncate text-primary hover:bg-muted cursor-pointer rounded-sm"
+                <Button
+                  className="p-2 text-sm max-w-full truncate text-gray-200 hover:text-gray-600 hover:bg-muted cursor-pointer rounded-sm"
                   onClick={() => {
                     onValueChange(inputValue.trim());
                     setOpen(false);
                   }}
                 >
                   Create "{inputValue}"
-                </div>
+                </Button>
               ) : (
                 "No framework found."
               )}

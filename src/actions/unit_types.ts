@@ -5,7 +5,6 @@ import { updateTag } from "next/cache";
 import { addUnitType } from "@/dal/unit_types";
 import type { DbResult, UnitType } from "@/db/types";
 
-
 export async function addUnitTypeAction(
   name: string,
 ): Promise<DbResult<UnitType>> {
