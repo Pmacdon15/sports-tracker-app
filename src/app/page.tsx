@@ -2,15 +2,14 @@ import { Show } from "@clerk/nextjs";
 import { Activity, ArrowRight, MapPin, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
-import { TimezoneRedirect } from "@/components/auth/TimezoneRedirect";
 import { Button } from "@/components/ui/button";
 
 export default function Home() {
   return (
     <div className="flex flex-col flex-1 items-center justify-center p-8 text-center animate-in fade-in slide-in-from-bottom-8 duration-1000">
-      <Suspense>
+      {/* <Suspense>
         <TimezoneRedirect />
-      </Suspense>
+      </Suspense> */}
       {/* Hero Section */}
       <h1 className="text-4xl md:text-6xl font-extrabold text-foreground tracking-tight mb-6">
         Manage Your <span className="text-primary">Equipment</span>
