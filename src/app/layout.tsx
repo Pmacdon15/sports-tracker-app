@@ -5,6 +5,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { Suspense } from "react";
 import { Toaster } from "sonner";
 import { Navbar } from "@/components/layout/Navbar";
+import { Footer } from "@/components/layout/Footer";
 import { Providers } from "./providers";
 import { TooltipProvider } from "@radix-ui/react-tooltip";
 
@@ -42,6 +43,7 @@ export default function RootLayout({
               {" "}
               <TooltipProvider>{children}</TooltipProvider>
             </main>
+            <Footer />
             <Toaster richColors position="bottom-right" />
           </Providers>
         </body>
