@@ -18,6 +18,7 @@ export async function checkoutEquipmentAction(
     updateTag(`active-rentals-${orgId}`);
     updateTag(`equipment-${orgId}`);
     updateTag(`unit-types-${orgId}`);
+    updateTag(`guest-stats-${orgId}`);
   }
   return res;
 }
@@ -33,6 +34,7 @@ export async function returnEquipmentAction(
     updateTag(`active-rentals-${orgId}`);
     updateTag(`completed-rentals-${orgId}`);
     updateTag(`equipment-${orgId}`);
+    updateTag(`guest-stats-${orgId}`);
   }
   return res;
 }

@@ -77,6 +77,11 @@ export function Navbar() {
             <Link href="/inventory">Inventory</Link>
           </NavigationMenuLink>
         </NavigationMenuItem>
+        <NavigationMenuItem>
+          <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+            <Link href="/guests">Guests</Link>
+          </NavigationMenuLink>
+        </NavigationMenuItem>
         {isAdmin && (
           <NavigationMenuItem>
             <NavigationMenuLink
@@ -205,6 +210,13 @@ export function Navbar() {
                     className="hover:text-primary pl-1 font-medium"
                   >
                     Inventory
+                  </Link>
+                  <Link
+                    href="/guests"
+                    onClick={() => setIsOpen(false)}
+                    className="hover:text-primary pl-1 font-medium"
+                  >
+                    Guests
                   </Link>
                   {isAdmin && (
                     <Link
