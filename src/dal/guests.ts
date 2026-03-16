@@ -1,9 +1,12 @@
 import { auth } from "@clerk/nextjs/server";
+
 import {
   getAllGuestsDb,
   getGlobalGuestStatsDb,
+  getGuestByIdDb,
   getGuestStatsDb,
 } from "@/db/guests";
+
 import type { DbResult, GlobalGuestStats, Guest, GuestStats } from "@/db/types";
 
 export async function getAllGuests(): Promise<DbResult<Guest[]>> {
@@ -16,6 +19,24 @@ export async function getAllGuests(): Promise<DbResult<Guest[]>> {
   } catch (e: unknown) {
     console.error("Error fetching all guests:", e);
     return { data: null, error: "Failed to fetch guests" };
+  }
+}
+
+export async function getGuestById(guestId: string): Promise<DbResult<Guest>> {
+  try {
+    const { orgId } = await auth.protect();
+    if (!orgId) throw new Error("Organization selection is required.");
+
+    const id = parseInt(guestId);
+    if (Number.isNaN(id)) throw new Error("Invalid guest ID");
+
+    const data = await getGuestByIdDb(orgId, id);
+    if (!data) return { data: null, error: "Guest not found" };
+
+    return { data, error: null };
+  } catch (e: unknown) {
+    console.error("Error fetching guest by ID:", e);
+    return { data: null, error: "Failed to fetch guest details" };
   }
 }
 

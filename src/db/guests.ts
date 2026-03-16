@@ -12,6 +12,18 @@ export async function getAllGuestsDb(orgId: string): Promise<Guest[]> {
   return res as unknown as Guest[];
 }
 
+export async function getGuestByIdDb(
+  orgId: string,
+  guestId: number,
+): Promise<Guest | null> {
+  const sql = getSql();
+  const res = await sql`
+    SELECT * FROM guests 
+    WHERE id = ${guestId} AND org_id = ${orgId}
+  `;
+  return (res[0] as unknown as Guest) || null;
+}
+
 export async function getGuestByNameDb(
   orgId: string,
   name: string,
@@ -69,7 +81,7 @@ export async function getGuestStatsDb(
 export async function getGlobalGuestStatsDb(
   orgId: string,
 ): Promise<GlobalGuestStats> {
-  "use cache";
+  "use cache: remote";
   cacheTag(`guest-global-stats-${orgId}`);
   const sql = getSql();
   const res = await sql`

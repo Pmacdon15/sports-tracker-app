@@ -25,18 +25,18 @@ export function useCheckoutMutation() {
   });
 }
 
-export function useReturnMutation(search?: string) {
-  const queryClient = useQueryClient();
+export function useReturnMutation(guestId:number) {
+  // const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (unit_number: string) => {
-      const res = await returnEquipmentAction(unit_number);
+      const res = await returnEquipmentAction(unit_number, guestId);
       if (res.error) throw new Error(res.error);
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["guest-stats-infinite", search],
-      });
+      // queryClient.invalidateQueries({
+      //   queryKey: ["guest-stats-infinite", search],
+      // });
     },
   });
 }

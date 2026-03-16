@@ -54,6 +54,28 @@ export async function getCompletedRentalsDb(
   return res as unknown as Transaction[];
 }
 
+export async function getGuestTransactionsDb(
+  orgId: string,
+  guestId: number,
+): Promise<Transaction[]> {
+  "use cache";
+  cacheTag(`guest-transactions-${orgId}-${guestId}`);
+  const sql = getSql();
+  const res = await sql`
+    SELECT 
+      t.*, 
+      e.unit_number as equipment_unit, 
+      e.type as equipment_type, 
+      g.name as guest_name
+    FROM transactions t
+    JOIN equipment e ON t.equipment_id = e.id
+    JOIN guests g ON t.guest_id = g.id
+    WHERE t.guest_id = ${guestId} AND t.org_id = ${orgId}
+    ORDER BY t.checked_out_at DESC
+  `;
+  return res as unknown as Transaction[];
+}
+
 export async function checkoutEquipmentDb(
   userId: string,
   orgId: string,

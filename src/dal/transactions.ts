@@ -1,12 +1,15 @@
 import { auth } from "@clerk/nextjs/server";
 import { addEquipmentDb, getEquipmentByUnitDb } from "@/db/equipment";
 import { createGuestDb, getGuestByNameDb } from "@/db/guests";
+
 import {
-    checkoutEquipmentDb,
-    getActiveRentalsDb,
-    getCompletedRentalsDb,
-    returnEquipmentDb,
+  checkoutEquipmentDb,
+  getActiveRentalsDb,
+  getCompletedRentalsDb,
+  getGuestTransactionsDb,
+  returnEquipmentDb,
 } from "@/db/transactions";
+
 import type { DbResult, Transaction } from "@/db/types";
 import { addUnitTypeDb } from "@/db/unit_types";
 
@@ -39,6 +42,24 @@ export async function getCompletedRentals(
       data: null,
       error: "Failed to fetch completed rentals",
     };
+  }
+}
+
+export async function getGuestTransactions(
+  guestId: string,
+): Promise<DbResult<Transaction[]>> {
+  try {
+    const { orgId } = await auth.protect();
+    if (!orgId) throw new Error("Organization selection is required.");
+
+    const id = parseInt(guestId);
+    if (Number.isNaN(id)) throw new Error("Invalid guest ID");
+
+    const data = await getGuestTransactionsDb(orgId, id);
+    return { data, error: null };
+  } catch (e: unknown) {
+    console.error("Error fetching guest transactions:", e);
+    return { data: null, error: "Failed to fetch guest trips" };
   }
 }
 
@@ -91,7 +112,7 @@ export async function checkoutEquipment(
 
 export async function returnEquipment(
   unit_number: string,
-  userId: string,
+  userId: string, 
 ): Promise<DbResult<Transaction>> {
   try {
     const { orgId } = await auth.protect();
