@@ -17,7 +17,7 @@ export default function Home() {
         <br /> With Confidence
       </h1>
 
-      <p className="max-w-[600px] text-lg text-muted-foreground mb-10">
+      <p className="max-w-150 text-lg text-muted-foreground mb-10">
         A premium, lightning-fast tracking solution for sports gear, rentals,
         and inventory. Never lose track of a raft or bike again.
       </p>
@@ -26,10 +26,15 @@ export default function Home() {
       <div className="flex flex-col sm:flex-row gap-4 mb-16">
         <Suspense>
           <Show when="signed-out">
-            <Button size="lg" className="w-full sm:w-auto font-semibold gap-2">
-              Get Started
-              <ArrowRight className="w-4 h-4" />
-            </Button>
+            <Link href={"/inventory"}>
+              <Button
+                size="lg"
+                className="w-full sm:w-auto font-semibold gap-2"
+              >
+                Get Started
+                <ArrowRight className="w-4 h-4" />
+              </Button>
+            </Link>
           </Show>
         </Suspense>
         <Suspense>
