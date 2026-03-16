@@ -18,6 +18,7 @@ export async function getAllGuests(): Promise<DbResult<Guest[]>> {
 export async function getGuestStats(
   page = 1,
   limit = 20,
+  search?: string,
 ): Promise<DbResult<GuestStats[]>> {
   try {
     const { orgId } = await auth.protect();
@@ -25,10 +26,10 @@ export async function getGuestStats(
 
     // REAL FUNCTION (Commented out for mock demonstration)
     // const offset = (page - 1) * limit;
-    // const data = await getGuestStatsDb(orgId, limit, offset);
+    // const data = await getGuestStatsDb(orgId, limit, offset, search);
 
     // MOCK FUNCTION for UI demonstration
-    const data = getMockGuestStats(page, limit);
+    const data = getMockGuestStats(page, limit, search);
 
     return { data, error: null };
   } catch (e: unknown) {

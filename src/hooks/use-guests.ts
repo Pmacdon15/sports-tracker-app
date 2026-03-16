@@ -1,13 +1,16 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import type { GuestStats } from "@/db/types";
 
-export function useInfiniteGuestStats(limit = 20) {
+export function useInfiniteGuestStats(limit = 20, search?: string) {
   return useInfiniteQuery({
-    queryKey: ["guest-stats-infinite"],
+    queryKey: ["guest-stats-infinite", search],
     queryFn: async ({ pageParam = 1 }) => {
-      const response = await fetch(
-        `/api/guests/stats?page=${pageParam}&limit=${limit}`,
-      );
+      const url = new URL("/api/guests/stats", window.location.origin);
+      url.searchParams.set("page", String(pageParam));
+      url.searchParams.set("limit", String(limit));
+      if (search) url.searchParams.set("query", search);
+
+      const response = await fetch(url.toString());
       if (!response.ok) {
         throw new Error("Failed to fetch guest stats");
       }

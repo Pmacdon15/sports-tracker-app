@@ -42,8 +42,10 @@ export async function getGuestStatsDb(
   orgId: string,
   limit = 20,
   offset = 0,
+  search?: string,
 ): Promise<GuestStats[]> {
   const sql = getSql();
+  const searchPattern = search ? `%${search}%` : null;
   const res = await sql`
     SELECT 
       g.id, 
@@ -53,6 +55,7 @@ export async function getGuestStatsDb(
     FROM guests g
     LEFT JOIN transactions t ON g.id = t.guest_id
     WHERE g.org_id = ${orgId}
+    ${searchPattern ? sql`AND g.name ILIKE ${searchPattern}` : sql``}
     GROUP BY g.id, g.name
     ORDER BY trip_count DESC, g.name ASC
     LIMIT ${limit} OFFSET ${offset}
@@ -81,7 +84,11 @@ export async function getGlobalGuestStatsDb(
   return res[0] as unknown as GlobalGuestStats;
 }
 
-export function getMockGuestStats(page = 1, limit = 20): GuestStats[] {
+export function getMockGuestStats(
+  page = 1,
+  limit = 20,
+  search?: string,
+): GuestStats[] {
   const firstNames = [
     "John",
     "Jane",
@@ -108,7 +115,7 @@ export function getMockGuestStats(page = 1, limit = 20): GuestStats[] {
   ];
 
   // Use a fixed seed-like approach for stable mock data
-  const data: GuestStats[] = Array.from({ length: 300 }, (_, i) => {
+  let data: GuestStats[] = Array.from({ length: 300 }, (_, i) => {
     const nameIndex = i % (firstNames.length * lastNames.length);
     const firstName = firstNames[Math.floor(nameIndex / lastNames.length)];
     const lastName = lastNames[nameIndex % lastNames.length];
@@ -126,6 +133,12 @@ export function getMockGuestStats(page = 1, limit = 20): GuestStats[] {
       last_trip_at,
     };
   });
+
+  // Filter based on search query
+  if (search) {
+    const query = search.toLowerCase();
+    data = data.filter((g) => g.name.toLowerCase().includes(query));
+  }
 
   // Sort by trip count descending
   const sortedData = data.sort((a, b) => b.trip_count - a.trip_count);

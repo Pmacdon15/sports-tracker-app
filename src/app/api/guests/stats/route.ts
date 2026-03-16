@@ -5,8 +5,9 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const page = Number.parseInt(searchParams.get("page") || "1");
   const limit = Number.parseInt(searchParams.get("limit") || "20");
+  const search = searchParams.get("query") || undefined;
 
-  const { data, error } = await getGuestStats(page, limit);
+  const { data, error } = await getGuestStats(page, limit, search);
 
   if (error) {
     return NextResponse.json({ error }, { status: 500 });
