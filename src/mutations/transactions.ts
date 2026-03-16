@@ -25,11 +25,11 @@ export function useCheckoutMutation() {
   });
 }
 
-export function useReturnMutation(guestId:number) {
+export function useReturnMutation() {
   // const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (unit_number: string) => {
-      const res = await returnEquipmentAction(unit_number, guestId);
+      const res = await returnEquipmentAction(unit_number);
       if (res.error) throw new Error(res.error);
       return res.data;
     },

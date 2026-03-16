@@ -6,12 +6,10 @@ import { Button } from "../ui/button";
 
 export default function ReturnButton({
   equipment_unit,
-  guestId
 }: {
   equipment_unit: string;
-  guestId:number
 }) {
-  const { mutate: returnItem, isPending } = useReturnMutation(guestId);
+  const { mutate: returnItem, isPending } = useReturnMutation();
 
   async function handleReturn(unit_number: string) {
     returnItem(unit_number, {

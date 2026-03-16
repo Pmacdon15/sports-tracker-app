@@ -92,8 +92,7 @@ export default function ActiveTab({
                     </span>
                   </div>
                   <ReturnButton
-                    equipment_unit={rental.equipment_unit}
-                    guestId={rental.guest_id}
+                    equipment_unit={rental.equipment_unit}                  
                   />
                 </div>
               ))}
