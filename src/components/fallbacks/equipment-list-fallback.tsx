@@ -43,6 +43,7 @@ export default function EquipmentListFallback() {
       <div className="grid sm:grid-cols-2 lg:grid-cols-2 gap-4 max-h-150 overflow-hidden pr-2 pb-4">
         {Array.from({ length: 6 }).map((_, i) => (
           <div
+            // biome-ignore lint/suspicious/noArrayIndexKey: this is a fallback I wont lose sleep over this and you shouldn't either
             key={i}
             className="flex justify-between items-center p-4 border rounded-xl border-border/50 bg-secondary/5"
           >

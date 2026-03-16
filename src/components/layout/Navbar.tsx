@@ -10,7 +10,7 @@ import {
 import { Dumbbell, Menu } from "lucide-react";
 import Link from "next/link";
 import * as React from "react";
-// import { Show } from "@/components/auth/Show";
+
 import { Button } from "@/components/ui/button";
 import {
   NavigationMenu,
@@ -31,12 +31,28 @@ export function Navbar() {
   const [isOpen, setIsOpen] = React.useState(false);
   const { has } = useAuth();
   const isAdmin = has({ role: "org:admin" });
-  // const isFree = has({ plan: "free" });
-  const today = new Date().toISOString().split("T")[0];
+
+  // 1. Get Local Date
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  const today = `${year}-${month}-${day}`;
+
+  // 2. Get Timezone (Memoized to prevent recalculation)
   const timezone = React.useMemo(
     () => Intl.DateTimeFormat().resolvedOptions().timeZone,
     [],
   );
+
+  // 3. Helper to build the encoded URL
+  const getTrackerPath = React.useCallback(() => {
+    const params = new URLSearchParams();
+    params.set("date", today);
+    params.set("timezone", timezone);
+    return `/tracker?${params.toString()}`;
+  }, [today, timezone]);
+
   const NavLinks = () => (
     <>
       <NavigationMenuItem>
@@ -52,9 +68,8 @@ export function Navbar() {
       <Show when="signed-in">
         <NavigationMenuItem>
           <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-            <Link href={`/tracker?date=${today}&timezone=${timezone}`}>
-              Tracker
-            </Link>
+            {/* Encoded Link */}
+            <Link href={getTrackerPath()}>Tracker</Link>
           </NavigationMenuLink>
         </NavigationMenuItem>
         <NavigationMenuItem>
@@ -72,16 +87,6 @@ export function Navbar() {
             </NavigationMenuLink>
           </NavigationMenuItem>
         )}
-        {/* {!isFree && isAdmin && (
-          <NavigationMenuItem>
-            <NavigationMenuLink
-              asChild
-              className={navigationMenuTriggerStyle()}
-            >
-              <Link href={`/experimental`}>Experimental</Link>
-            </NavigationMenuLink>
-          </NavigationMenuItem>
-        )} */}
       </Show>
     </>
   );
@@ -157,7 +162,7 @@ export function Navbar() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="px-0 text-base hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
+                className="px-0 text-base hover:bg-transparent"
               >
                 <Menu className="h-6 w-6" />
                 <span className="sr-only">Toggle Menu</span>
@@ -186,8 +191,9 @@ export function Navbar() {
                   Plans
                 </Link>
                 <Show when="signed-in">
+                  {/* Encoded Link for Mobile */}
                   <Link
-                    href={`/tracker?date=${today}&timezone=${timezone}`}
+                    href={getTrackerPath()}
                     onClick={() => setIsOpen(false)}
                     className="hover:text-primary pl-1 font-medium"
                   >
@@ -209,15 +215,6 @@ export function Navbar() {
                       Settings
                     </Link>
                   )}
-                  {/* {!isFree && isAdmin && (
-                    <Link
-                      href={`/experimental`}
-                      onClick={() => setIsOpen(false)}
-                      className="hover:text-primary pl-1 font-medium"
-                    >
-                      Experimental
-                    </Link>
-                  )} */}
                 </Show>
               </div>
             </SheetContent>
