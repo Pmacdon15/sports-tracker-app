@@ -53,6 +53,15 @@ export async function addEquipment(
     return { data, error: null };
   } catch (e: unknown) {
     console.error("Error adding equipment:", e);
+
+    if (e instanceof Error) {
+      if (e.message.includes("limit reached")) {
+        return { data: null, error: e.message };
+      }
+
+      return { data: null, error: e.message };
+    }
+
     return { data: null, error: "Failed to add equipment" };
   }
 }

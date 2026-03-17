@@ -16,12 +16,16 @@ export async function getAllEquipmentDb(orgId: string): Promise<Equipment[]> {
 
 export function getMockEquipment(orgId: string): Equipment[] {
   const types = ["Raft", "Bike", "Helmet", "Paddle", "Life Jacket"];
-  const statuses: Equipment["status"][] = ["AVAILABLE", "CHECKED_OUT", "RETIRED"];
+  const statuses: Equipment["status"][] = [
+    "AVAILABLE",
+    "CHECKED_OUT",
+    "RETIRED",
+  ];
 
   return Array.from({ length: 100 }, (_, i) => {
     const id = i + 1;
     const type = types[Math.floor(Math.random() * types.length)];
-    
+
     return {
       id,
       org_id: orgId,
@@ -37,7 +41,7 @@ export function getMockEquipment(orgId: string): Equipment[] {
 export async function getEquipmentByUnitDb(
   orgId: string,
   unit_number: string,
-): Promise<Equipment | null> { 
+): Promise<Equipment | null> {
   const sql = getSql();
   const res = await sql`
     SELECT * FROM equipment 
@@ -51,11 +55,31 @@ export async function addEquipmentDb(
   unit_number: string,
 ): Promise<Equipment> {
   const sql = getSql();
+
+  const [orgData] = await sql`
+    SELECT 
+      o.equipment_limit,
+      (SELECT COUNT(*) FROM equipment WHERE org_id = ${orgId} AND status <> 'DELETED') as current_count
+    FROM organizations o
+    WHERE o.org_id = ${orgId}
+  `;
+
+  if (!orgData) {
+    throw new Error("Organization not found in database.");
+  }
+
+  if (Number(orgData.current_count) >= orgData.equipment_limit) {
+    throw new Error(
+      `Equipment limit reached (${orgData.equipment_limit}). Please upgrade your plan.`,
+    );
+  }
+
   const res = await sql`
     INSERT INTO equipment (type, unit_number, org_id) 
     VALUES (${type}, ${unit_number}, ${orgId}) 
     RETURNING *
   `;
+
   return res[0] as unknown as Equipment;
 }
 
@@ -71,7 +95,7 @@ export async function updateEquipmentStatusDb(
     WHERE unit_number = ${unit_number} AND org_id = ${orgId} 
     RETURNING *
   `;
-  return (res[0] as unknown as Equipment);
+  return res[0] as unknown as Equipment;
 }
 
 export async function deleteEquipmentDb(
