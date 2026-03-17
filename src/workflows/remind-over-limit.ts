@@ -21,14 +21,14 @@ export async function remindOverLimit(orgId: string) {
     "Urgent: Organization is over limit. Oldest items will be retired automatically in 1 week.",
   );
 
-  await sleep("60s");
+  await sleep("7d");
 
   await SendEmail(
     // writable,
     emails,
     "System Notice: Excess equipment will be retired to match your plan limits in one day.",
   );
-  await sleep("60s");
+  await sleep("1d");
 
   // Call the locally defined step
   await retireExcessStep(orgId);
