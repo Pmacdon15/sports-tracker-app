@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
+import { isOverMemberShipLimit } from "@/db/auth";
 import { addEquipmentDb, getEquipmentByUnitDb } from "@/db/equipment";
 import { createGuestDb, getGuestByNameDb } from "@/db/guests";
-
 import {
   checkoutEquipmentDb,
   getActiveRentalsDb,
@@ -9,7 +9,6 @@ import {
   getGuestTransactionsDb,
   returnEquipmentDb,
 } from "@/db/transactions";
-
 import type { DbResult, Transaction } from "@/db/types";
 import { addUnitTypeDb } from "@/db/unit_types";
 
@@ -72,6 +71,10 @@ export async function checkoutEquipment(
     const { orgId, userId } = await auth.protect();
     if (!orgId) throw new Error("Organization selection is required.");
 
+    const isOverMemberShipLimitValue = await isOverMemberShipLimit(orgId);
+    if (isOverMemberShipLimitValue)
+      throw new Error("Over organization membership limit.");
+
     let guest = await getGuestByNameDb(orgId, guest_name);
 
     if (!guest) {
@@ -106,6 +109,15 @@ export async function checkoutEquipment(
     return { data, error: null };
   } catch (e: unknown) {
     console.error("Error checking out equipment:", e);
+
+    if (e instanceof Error) {
+      if (e.message === "Over organization membership limit.") {
+        return { data: null, error: "Over organization membership limit." };
+      }
+
+      return { data: null, error: e.message };
+    }
+
     return { data: null, error: "Failed to checkout equipment" };
   }
 }
@@ -114,7 +126,7 @@ export async function returnEquipment(
   unit_number: string,
 ): Promise<DbResult<Transaction>> {
   try {
-    const { orgId , userId} = await auth.protect();
+    const { orgId, userId } = await auth.protect();
     if (!orgId) throw new Error("Organization selection is required.");
 
     const equipment = await getEquipmentByUnitDb(orgId, unit_number);
