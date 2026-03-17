@@ -21,3 +21,27 @@ export async function isOverMemberShipLimit(orgId: string) {
     return true;
   }
 }
+
+
+export async function getAdminEmails(organizationId: string): Promise<string[]> {
+  try {
+    const client = await clerkClient();
+
+   
+    const { data: memberships } = await client.organizations.getOrganizationMembershipList({
+      organizationId,      
+      role: ['org:admin'], 
+    });
+
+   
+    const adminEmails = memberships
+      .filter(mem => mem.role === 'org:admin') 
+      .map(mem => mem.publicUserData?.identifier)
+      .filter((email): email is string => Boolean(email));
+
+    return adminEmails;
+  } catch (error) {
+    console.error("Error fetching admin emails:", error);
+    return [];
+  }
+}

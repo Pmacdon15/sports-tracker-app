@@ -1,7 +1,8 @@
 import { cacheTag } from "next/cache";
+import { start } from "workflow/api";
+import { remindOverLimit } from "../workflows/remind-over-limit";
 import { getSql } from "./db";
 import type { Equipment } from "./types";
-
 export async function getAllEquipmentDb(orgId: string): Promise<Equipment[]> {
   "use cache";
   cacheTag(`equipment-${orgId}`);
@@ -56,24 +57,7 @@ export async function addEquipmentDb(
 ): Promise<Equipment> {
   const sql = getSql();
 
-  const [orgData] = await sql`
-    SELECT 
-      o.equipment_limit,
-      (SELECT COUNT(*) FROM equipment WHERE org_id = ${orgId} AND status <> 'DELETED') as current_count
-    FROM organizations o
-    WHERE o.org_id = ${orgId}
-  `;
-
-  if (!orgData) {
-    throw new Error("Organization not found in database.");
-  }
-
-  if (Number(orgData.current_count) >= orgData.equipment_limit) {
-    throw new Error(
-      `Equipment limit reached (${orgData.equipment_limit}). Please upgrade your plan.`,
-    );
-  }
-
+  await isOverEquipmentLimitDb(orgId);
   const res = await sql`
     INSERT INTO equipment (type, unit_number, org_id) 
     VALUES (${type}, ${unit_number}, ${orgId}) 
@@ -109,4 +93,30 @@ export async function deleteEquipmentDb(
     RETURNING id
   `;
   return res.length > 0;
+}
+
+export async function isOverEquipmentLimitDb(orgId: string) {
+  const sql = getSql();
+  const [orgData] = await sql`
+    SELECT 
+      o.equipment_limit,
+      (SELECT COUNT(*) FROM equipment WHERE org_id = ${orgId} AND status <> 'DELETED' AND status <> 'RETIRED') as current_count
+    FROM organizations o
+    WHERE o.org_id = ${orgId}
+  `;
+
+  if (!orgData) {
+    throw new Error("Organization not found in database.");
+  }
+
+  if (Number(orgData.current_count) > orgData.equipment_limit) {
+    await start(remindOverLimit, [orgId]);
+    throw new Error(
+      `Equipment limit reached (${orgData.equipment_limit}). Please upgrade your plan.`,
+    );
+  } else if (Number(orgData.current_count) >= orgData.equipment_limit) {
+    throw new Error(
+      `Equipment limit reached (${orgData.equipment_limit}). Please upgrade your plan.`,
+    );
+  }
 }
