@@ -1,4 +1,5 @@
 import { sleep } from "workflow";
+import { getSql } from "../db/db";
 import { retireExcessEquipmentDb } from "../db/equipment-retirement";
 import { getAdminEmailsStep } from "./functions/get-admin-emails";
 import { SendEmail } from "./functions/send-email";
@@ -10,13 +11,22 @@ export async function retireExcessStep(orgId: string) {
   await retireExcessEquipmentDb(orgId);
 }
 
+export async function clearWorkflowFlagStep(orgId: string) {
+  "use step";
+  const sql = getSql();
+  await sql`
+    UPDATE organizations
+    SET remind_workflow_active = false
+    WHERE org_id = ${orgId}
+  `;
+  console.log("Cleared workflow active flag for org:", orgId);
+}
+
 export async function remindOverLimit(orgId: string) {
   "use workflow";
-  // const writable = getWritable();
   const emails = await getAdminEmailsStep(orgId);
 
   await SendEmail(
-    // writable,
     emails,
     "Urgent: Organization is over limit. Oldest items will be retired automatically in 1 week.",
   );
@@ -24,18 +34,19 @@ export async function remindOverLimit(orgId: string) {
   await sleep("7d");
 
   await SendEmail(
-    // writable,
     emails,
     "System Notice: Excess equipment will be retired to match your plan limits in one day.",
   );
   await sleep("1d");
 
-  // Call the locally defined step
+  // Retire excess equipment
   await retireExcessStep(orgId);
 
   await SendEmail(
-    // writable,
     emails,
     "System Notice: Excess equipment has been retired to match your plan limits.",
   );
+
+  // Clear the flag so a new workflow can be triggered if they go over limit again
+  await clearWorkflowFlagStep(orgId);
 }
