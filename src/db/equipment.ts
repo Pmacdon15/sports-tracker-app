@@ -1,7 +1,8 @@
 import { cacheTag } from "next/cache";
+import { start } from "workflow/api";
+import { remindOverLimit } from "../workflows/remind-over-limit";
 import { getSql } from "./db";
 import type { Equipment } from "./types";
-
 export async function getAllEquipmentDb(orgId: string): Promise<Equipment[]> {
   "use cache";
   cacheTag(`equipment-${orgId}`);
@@ -56,24 +57,7 @@ export async function addEquipmentDb(
 ): Promise<Equipment> {
   const sql = getSql();
 
-  const [orgData] = await sql`
-    SELECT 
-      o.equipment_limit,
-      (SELECT COUNT(*) FROM equipment WHERE org_id = ${orgId} AND status <> 'DELETED') as current_count
-    FROM organizations o
-    WHERE o.org_id = ${orgId}
-  `;
-
-  if (!orgData) {
-    throw new Error("Organization not found in database.");
-  }
-
-  if (Number(orgData.current_count) >= orgData.equipment_limit) {
-    throw new Error(
-      `Equipment limit reached (${orgData.equipment_limit}). Please upgrade your plan.`,
-    );
-  }
-
+  await isOverEquipmentLimitDb(orgId);
   const res = await sql`
     INSERT INTO equipment (type, unit_number, org_id) 
     VALUES (${type}, ${unit_number}, ${orgId}) 
@@ -109,4 +93,59 @@ export async function deleteEquipmentDb(
     RETURNING id
   `;
   return res.length > 0;
+}
+
+export async function triggerOverLimitWorkflowIfNecessaryDb(orgId: string) {
+  const sql = getSql();
+  const [orgData] = await sql`
+    SELECT 
+      o.equipment_limit,
+      o.remind_workflow_active,
+      (SELECT COUNT(*) FROM equipment WHERE org_id = ${orgId} AND status <> 'DELETED' AND status <> 'RETIRED') as current_count
+    FROM organizations o
+    WHERE o.org_id = ${orgId}
+  `;
+
+  if (!orgData) {
+    return { current_count: 0, equipment_limit: 0, is_over: false };
+  }
+
+  const current_count = Number(orgData.current_count);
+  const equipment_limit = orgData.equipment_limit;
+  console.log("Data: ", current_count, equipment_limit);
+  console.log("Org Data: ", orgData);
+  if (current_count > equipment_limit) {
+    // Only start the workflow if one isn't already running for this org.
+    // Use an atomic update to claim the lock — if no row is returned, another
+    // workflow is already active and we skip starting a new one.
+    if (!orgData.remind_workflow_active) {
+      const claimed = await sql`
+        UPDATE organizations
+        SET remind_workflow_active = true
+        WHERE org_id = ${orgId} AND (remind_workflow_active = false OR remind_workflow_active IS NULL)
+        RETURNING org_id
+      `;
+      console.log("claimed: ", claimed.length);
+      if (claimed.length > 0) {
+        await start(remindOverLimit, [orgId]);
+      }
+    }
+  }
+
+  return {
+    current_count,
+    equipment_limit,
+    is_over: current_count > equipment_limit,
+  };
+}
+
+export async function isOverEquipmentLimitDb(orgId: string) {
+  const { current_count, equipment_limit } =
+    await triggerOverLimitWorkflowIfNecessaryDb(orgId);
+
+  if (current_count >= equipment_limit) {
+    throw new Error(
+      `Equipment limit reached (${equipment_limit}). Please upgrade your plan.`,
+    );
+  }
 }

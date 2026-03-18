@@ -1,5 +1,6 @@
 import { getSql } from "./db";
 import type { Organization } from "./types";
+import { triggerOverLimitWorkflowIfNecessaryDb } from "./equipment";
 
 export async function upsertOrganizationDb(
   orgId: string,
@@ -27,6 +28,11 @@ export async function updateOrganizationEquipmentLimitDb(
     WHERE org_id = ${orgId}
     RETURNING *
   `;
+
+  if (res.length > 0) {
+    await triggerOverLimitWorkflowIfNecessaryDb(orgId);
+  }
+
   return (res[0] as unknown as Organization) || null;
 }
 

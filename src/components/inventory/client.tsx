@@ -133,16 +133,18 @@ export function EquipmentList({
               </div>
             </div>
             <div className="flex items-center gap-1">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <AlertDialogRetire>
-                    <InventoryRetireButton unit_number={eq.unit_number} />
-                  </AlertDialogRetire>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Retire this equipment</p>
-                </TooltipContent>
-              </Tooltip>
+              {eq.status !== "RETIRED" && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <AlertDialogRetire>
+                      <InventoryRetireButton unit_number={eq.unit_number} />
+                    </AlertDialogRetire>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Retire this equipment</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
               <Tooltip>
                 <TooltipTrigger asChild>
                   <AlertDialogDestructive>

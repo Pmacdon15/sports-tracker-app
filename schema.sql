@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS organizations (
   org_id VARCHAR(255) PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
   equipment_limit INTEGER DEFAULT 10,
+  remind_workflow_active BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
