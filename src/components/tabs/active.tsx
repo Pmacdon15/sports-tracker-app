@@ -1,5 +1,5 @@
 import { Clock } from "lucide-react";
-import { use } from "react";
+import { use, ViewTransition } from "react";
 import type { DbResult, Transaction } from "@/db/types";
 import { cn } from "@/lib/utils";
 import ReturnButton from "../buttons/return-button";
@@ -66,35 +66,32 @@ export default function ActiveTab({
           ) : (
             <div className="grid gap-4">
               {activeRentals.map((rental) => (
-                <div
-                  key={rental.id}
-                  className="flex items-center justify-between p-4 border rounded-lg bg-card shadow-sm"
-                >
-                  <div className="flex flex-col gap-1">
-                    <span className="font-bold text-lg">
-                      {rental.guest_name}
-                    </span>
-                    <span className="text-sm text-muted-foreground">
-                      Unit:{" "}
-                      <span className="text-foreground font-medium">
-                        {rental.equipment_unit}
-                      </span>{" "}
-                      ({rental.equipment_type})
-                    </span>
-                    <span
-                      className={cn(
-                        "text-xs flex items-center gap-1 mt-1",
-                        getDurationColor(rental.checked_out_at),
-                      )}
-                    >
-                      <Clock className="w-3 h-3" /> Out for{" "}
-                      {formatDuration(rental.checked_out_at)}
-                    </span>
+                <ViewTransition key={rental.id}>
+                  <div className="flex items-center justify-between p-4 border rounded-lg bg-card shadow-sm">
+                    <div className="flex flex-col gap-1">
+                      <span className="font-bold text-lg">
+                        {rental.guest_name}
+                      </span>
+                      <span className="text-sm text-muted-foreground">
+                        Unit:{" "}
+                        <span className="text-foreground font-medium">
+                          {rental.equipment_unit}
+                        </span>{" "}
+                        ({rental.equipment_type})
+                      </span>
+                      <span
+                        className={cn(
+                          "text-xs flex items-center gap-1 mt-1",
+                          getDurationColor(rental.checked_out_at),
+                        )}
+                      >
+                        <Clock className="w-3 h-3" /> Out for{" "}
+                        {formatDuration(rental.checked_out_at)}
+                      </span>
+                    </div>
+                    <ReturnButton equipment_unit={rental.equipment_unit} />
                   </div>
-                  <ReturnButton
-                    equipment_unit={rental.equipment_unit}                  
-                  />
-                </div>
+                </ViewTransition>
               ))}
             </div>
           )}

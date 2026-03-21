@@ -5,7 +5,7 @@ import type { Transaction } from "./types";
 export async function getActiveRentalsDb(
   orgId: string,
 ): Promise<Transaction[]> {
-  "use cache";
+  "use cache: remote";
   cacheTag(`active-rentals-${orgId}`);
   const sql = getSql();
   const res = await sql`
@@ -24,7 +24,7 @@ export async function getCompletedRentalsDb(
   date?: string,
   timezone = "UTC",
 ): Promise<Transaction[]> {
-  "use cache";
+  "use cache: remote";
 
   // 1. Fallback to server date if 'date' is undefined
   // Using .toISOString().split('T')[0] gives us '2026-03-13'
@@ -58,7 +58,7 @@ export async function getGuestTransactionsDb(
   orgId: string,
   guestId: number,
 ): Promise<Transaction[]> {
-  "use cache";
+  "use cache: remote";
   cacheTag(`guest-transactions-${orgId}-${guestId}`);
   const sql = getSql();
   const res = await sql`

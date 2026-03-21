@@ -1,6 +1,6 @@
 import { getSql } from "./db";
-import type { Organization } from "./types";
 import { triggerOverLimitWorkflowIfNecessaryDb } from "./equipment";
+import type { Organization } from "./types";
 
 export async function upsertOrganizationDb(
   orgId: string,

@@ -3,7 +3,7 @@ import { getSql } from "./db";
 import type { Setting } from "./types";
 
 export async function getSettingsDb(orgId: string): Promise<Setting[]> {
-  "use cache";
+  "use cache: remote";
   cacheTag(`settings-${orgId}`);
   const sql = getSql();
   const res = await sql`
@@ -27,5 +27,5 @@ export async function updateSettingDb(
     RETURNING *
   `;
 
-  return (res[0] as unknown as Setting);
+  return res[0] as unknown as Setting;
 }

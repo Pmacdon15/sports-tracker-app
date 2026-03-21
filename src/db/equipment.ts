@@ -4,7 +4,7 @@ import { remindOverLimit } from "../workflows/remind-over-limit";
 import { getSql } from "./db";
 import type { Equipment } from "./types";
 export async function getAllEquipmentDb(orgId: string): Promise<Equipment[]> {
-  "use cache";
+  "use cache: remote";
   cacheTag(`equipment-${orgId}`);
   const sql = getSql();
   const res = await sql`

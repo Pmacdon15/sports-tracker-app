@@ -5,10 +5,9 @@ import type { ExperimentalFeature } from "./types";
 export async function getExperimentalFeaturesDb(
   orgId: string,
 ): Promise<(ExperimentalFeature & { description: string | null })[]> {
-
-  "use cache";
+  "use cache: remote";
   cacheTag(`experimental-features-${orgId}`);
-  
+
   const sql = getSql();
   const res = await sql`
     SELECT 

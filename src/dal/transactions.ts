@@ -132,7 +132,7 @@ export async function returnEquipment(
     const equipment = await getEquipmentByUnitDb(orgId, unit_number);
 
     if (!equipment) throw new Error(`Equipment ${unit_number} not found.`);
-    if (equipment.status !== "CHECKED_OUT" && equipment.status !== "DELETED") {
+    if (equipment.status !== "CHECKED_OUT" && equipment.status !== "DELETED"  && equipment.status !== "RETIRED") {
       throw new Error(`Equipment ${unit_number} is not checked out.`);
     }
 

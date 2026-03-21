@@ -3,14 +3,14 @@ import { getSql } from "./db";
 import type { UnitType } from "./types";
 
 export async function getAllUnitTypesDb(orgId: string): Promise<UnitType[]> {
-  "use cache";
+  "use cache: remote";
   cacheTag(`unit-types-${orgId}`);
   const sql = getSql();
   const res = await sql`
     SELECT * FROM unit_types 
     WHERE org_id = ${orgId} 
     ORDER BY name ASC
-  `;  
+  `;
   return res as unknown as UnitType[];
 }
 

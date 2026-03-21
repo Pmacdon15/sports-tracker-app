@@ -1,6 +1,6 @@
 "use client";
 import { Search, SlidersHorizontal } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useState, ViewTransition } from "react";
 import { AlertDialogDestructive } from "@/components/dialogs/delete-inventory";
 import { AlertDialogRetire } from "@/components/dialogs/retire-inventory";
 import { Button } from "@/components/ui/button";
@@ -112,51 +112,50 @@ export function EquipmentList({
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-2 gap-4 max-h-150 overflow-y-auto pr-2 pb-4 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
         {filteredEquipment.map((eq) => (
-          <div
-            key={eq.id}
-            className="flex justify-between items-center p-4 border rounded-xl border-border/50 bg-secondary/5 hover:bg-secondary/10 transition-all duration-200 hover:shadow-md group relative overflow-hidden"
-          >
-            <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary/10 group-hover:bg-primary/30 transition-colors" />
-            <div className="flex flex-col gap-1.5 ml-1">
-              <span className="font-bold text-lg text-foreground tracking-tight leading-none">
-                {eq.unit_number}
-              </span>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-semibold text-muted-foreground bg-muted/50 px-2 py-0.5 rounded border border-border/50">
-                  {eq.type}
+          <ViewTransition key={eq.id}>
+            <div className="flex justify-between items-center p-4 border rounded-xl border-border/50 bg-secondary/5 hover:bg-secondary/10 transition-all duration-200 hover:shadow-md group relative overflow-hidden">
+              <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary/10 group-hover:bg-primary/30 transition-colors" />
+              <div className="flex flex-col gap-1.5 ml-1">
+                <span className="font-bold text-lg text-foreground tracking-tight leading-none">
+                  {eq.unit_number}
                 </span>
-                <span
-                  className={`text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest border ${getStatusStyles(eq.status)}`}
-                >
-                  {eq.status.replace("_", " ")}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-semibold text-muted-foreground bg-muted/50 px-2 py-0.5 rounded border border-border/50">
+                    {eq.type}
+                  </span>
+                  <span
+                    className={`text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest border ${getStatusStyles(eq.status)}`}
+                  >
+                    {eq.status.replace("_", " ")}
+                  </span>
+                </div>
               </div>
-            </div>
-            <div className="flex items-center gap-1">
-              {eq.status !== "RETIRED" && (
+              <div className="flex items-center gap-1">
+                {eq.status !== "RETIRED" && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <AlertDialogRetire>
+                        <InventoryRetireButton unit_number={eq.unit_number} />
+                      </AlertDialogRetire>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Retire this equipment</p>
+                    </TooltipContent>
+                  </Tooltip>
+                )}
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <AlertDialogRetire>
-                      <InventoryRetireButton unit_number={eq.unit_number} />
-                    </AlertDialogRetire>
+                    <AlertDialogDestructive>
+                      <InventoryDeleteButton unit_number={eq.unit_number} />
+                    </AlertDialogDestructive>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Retire this equipment</p>
+                    <p>Delete this equipment</p>
                   </TooltipContent>
                 </Tooltip>
-              )}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <AlertDialogDestructive>
-                    <InventoryDeleteButton unit_number={eq.unit_number} />
-                  </AlertDialogDestructive>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Delete this equipment</p>
-                </TooltipContent>
-              </Tooltip>
+              </div>
             </div>
-          </div>
+          </ViewTransition>
         ))}
         {filteredEquipment.length === 0 && (
           <div className="col-span-full py-24 text-center flex flex-col items-center justify-center border border-dashed rounded-2xl bg-muted/5 border-primary/10">
