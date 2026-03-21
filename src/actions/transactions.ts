@@ -15,6 +15,7 @@ export async function checkoutEquipmentAction(
     updateTag(`equipment-${res.data?.org_id}`);
     updateTag(`unit-types-${res.data?.org_id}`);
     updateTag(`guest-global-stats-${res.data?.org_id}`);
+    updateTag(`guest-transactions-${res.data?.org_id}-${res.data?.guest_id}`);
   }
   return res;
 }
@@ -25,7 +26,9 @@ export async function returnEquipmentAction(
   const res = await returnEquipment(unit_number);
   if (!res.error) {
     updateTag(`active-rentals-${res.data?.org_id}`);
-    updateTag(`completed-rentals-${res.data?.org_id}`);
+    // updateTag(`completed-rentals-${res.data?.org_id}`);
+    const date = res.data?.checked_in_at?.toISOString().split("T")[0];
+    updateTag(`completed-rentals-${res.data?.org_id}-${date}`);
     updateTag(`equipment-${res.data?.org_id}`);
     updateTag(`guest-global-stats-${res.data?.org_id}`);
     updateTag(`guest-transactions-${res.data?.org_id}-${res.data?.guest_id}`);
