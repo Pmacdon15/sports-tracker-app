@@ -1,15 +1,15 @@
 import { auth } from "@clerk/nextjs/server";
-
+import { connection } from "next/server";
 import {
   getAllGuestsDb,
   getGlobalGuestStatsDb,
   getGuestByIdDb,
   getGuestStatsDb,
 } from "@/db/guests";
-
 import type { DbResult, GlobalGuestStats, Guest, GuestStats } from "@/db/types";
 
 export async function getAllGuests(): Promise<DbResult<Guest[]>> {
+  await connection();
   try {
     const { orgId } = await auth.protect();
     if (!orgId) throw new Error("Organization selection is required.");
@@ -45,6 +45,7 @@ export async function getGuestStats(
   limit = 20,
   search?: string,
 ): Promise<DbResult<GuestStats[]>> {
+  await connection();
   try {
     const { orgId } = await auth.protect();
     if (!orgId) throw new Error("Unauthorized");
@@ -65,6 +66,7 @@ export async function getGuestStats(
 export async function getGlobalGuestStats(): Promise<
   DbResult<GlobalGuestStats>
 > {
+  await connection();
   try {
     const { orgId } = await auth.protect();
     if (!orgId) throw new Error("Unauthorized");

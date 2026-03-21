@@ -1,8 +1,10 @@
 import { auth } from "@clerk/nextjs/server";
 import { getSettingsDb, updateSettingDb } from "@/db/settings";
 import type { DbResult, Setting } from "@/db/types";
+import { connection } from "next/server";
 
 export async function getSettings(): Promise<DbResult<Record<string, string>>> {
+  await connection();
   try {
     const { orgId } = await auth.protect();
     if (!orgId) throw new Error("Organization selection is required.");

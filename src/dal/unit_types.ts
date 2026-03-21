@@ -1,9 +1,11 @@
 import { auth } from "@clerk/nextjs/server";
+import { connection } from "next/server";
 import type { DbResult, UnitType } from "@/db/types";
 import { addUnitTypeDb, getAllUnitTypesDb } from "@/db/unit_types";
 
 export async function getAllUnitTypes(): Promise<DbResult<UnitType[]>> {
-  try {    
+  await connection();
+  try {
     const { orgId } = await auth.protect();
     if (!orgId) throw new Error("Organization selection is required.");
 
@@ -16,6 +18,7 @@ export async function getAllUnitTypes(): Promise<DbResult<UnitType[]>> {
 }
 
 export async function addUnitType(name: string): Promise<DbResult<UnitType>> {
+  await connection();
   try {
     const { orgId } = await auth.protect();
     if (!orgId) throw new Error("Organization selection is required.");

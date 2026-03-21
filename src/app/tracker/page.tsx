@@ -7,7 +7,7 @@ import { getSettings } from "@/dal/settings";
 import { getActiveRentals, getCompletedRentals } from "@/dal/transactions";
 import { getAllUnitTypes } from "@/dal/unit_types";
 
-export default function TrackerPage(props: PageProps<"/tracker">) {
+export default async function TrackerPage(props: PageProps<"/tracker">) {
   const rentalsPromise = getActiveRentals();
   const completedRentalsPromise = props.searchParams.then((params) => {
     const dateStr = Array.isArray(params.date) ? params.date[0] : params.date;

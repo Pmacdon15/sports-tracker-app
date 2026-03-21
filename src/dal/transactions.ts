@@ -11,8 +11,10 @@ import {
 } from "@/db/transactions";
 import type { DbResult, Transaction } from "@/db/types";
 import { addUnitTypeDb } from "@/db/unit_types";
+import { connection } from "next/server";
 
 export async function getActiveRentals(): Promise<DbResult<Transaction[]>> {
+  await connection();
   try {
     const { orgId } = await auth.protect();
     if (!orgId) throw new Error("Organization selection is required.");
@@ -132,7 +134,11 @@ export async function returnEquipment(
     const equipment = await getEquipmentByUnitDb(orgId, unit_number);
 
     if (!equipment) throw new Error(`Equipment ${unit_number} not found.`);
-    if (equipment.status !== "CHECKED_OUT" && equipment.status !== "DELETED"  && equipment.status !== "RETIRED") {
+    if (
+      equipment.status !== "CHECKED_OUT" &&
+      equipment.status !== "DELETED" &&
+      equipment.status !== "RETIRED"
+    ) {
       throw new Error(`Equipment ${unit_number} is not checked out.`);
     }
 

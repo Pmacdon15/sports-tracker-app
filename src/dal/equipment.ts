@@ -7,8 +7,10 @@ import {
 } from "@/db/equipment";
 import type { DbResult, Equipment } from "@/db/types";
 import { addUnitTypeDb } from "@/db/unit_types";
+import { connection } from "next/server";
 
 export async function getAllEquipment(): Promise<DbResult<Equipment[]>> {
+  await connection();
   try {
     const { orgId } = await auth.protect();
     if (!orgId) throw new Error("Organization selection is required.");
