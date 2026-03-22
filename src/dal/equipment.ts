@@ -1,4 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
+import { errAsync, okAsync } from "neverthrow";
 import {
   addEquipmentDb,
   getAllEquipmentDb,
@@ -42,60 +43,52 @@ export async function getEquipmentByUnit(
   }
 }
 
-export async function addEquipment(
-  type: string,
-  unit_number: string,
-): Promise<DbResult<Equipment>> {
+export async function addEquipment(type: string, unit_number: string) {
   try {
     const { orgId } = await auth.protect();
-    if (!orgId) throw new Error("Organization selection is required.");
+    if (!orgId) return errAsync({ reason: "Unauthorized" } as const);
 
     const data = await addEquipmentDb(orgId, type, unit_number);
     await addUnitTypeDb(orgId, type);
-    return { data, error: null };
+    return okAsync(data);
   } catch (e: unknown) {
     console.error("Error adding equipment:", e);
 
-    if (e instanceof Error) {
-      if (e.message.includes("limit reached")) {
-        return { data: null, error: e.message };
-      }
-
-      return { data: null, error: e.message };
+    if (e instanceof Error && e.message.includes("limit reached")) {
+      return errAsync({
+        reason: "Over organization membership limit.",
+        message: e.message,
+      } as const);
     }
 
-    return { data: null, error: "Failed to add equipment" };
+    return errAsync({ reason: "Failed to add equipment" } as const);
   }
 }
 
-export async function deleteEquipment(
-  unit_number: string,
-): Promise<DbResult<Equipment>> {
+export async function deleteEquipment(unit_number: string) {
   try {
     const { orgId, has } = await auth.protect();
     const isAdmin = has({ role: "org:admin" });
-    if (!orgId || !isAdmin) throw new Error("Unauthorized");
+    if (!orgId || !isAdmin) return errAsync({ reason: "Unauthorized" } as const);
 
     const data = await updateEquipmentStatusDb(orgId, unit_number, "DELETED");
-    return { data, error: null };
+    return okAsync(data);
   } catch (e: unknown) {
     console.error("Error deleting equipment:", e);
-    return { data: null, error: "Failed to delete equipment" };
+    return errAsync({ reason: "Failed to delete equipment" } as const);
   }
 }
 
-export async function retireEquipment(
-  unit_number: string,
-): Promise<DbResult<Equipment>> {
+export async function retireEquipment(unit_number: string) {
   try {
     const { orgId, has } = await auth.protect();
     const isAdmin = has({ role: "org:admin" });
-    if (!orgId || !isAdmin) throw new Error("Unauthorized");
+    if (!orgId || !isAdmin) return errAsync({ reason: "Unauthorized" } as const);
 
     const data = await updateEquipmentStatusDb(orgId, unit_number, "RETIRED");
-    return { data, error: null };
+    return okAsync(data);
   } catch (e: unknown) {
     console.error("Error retiring equipment:", e);
-    return { data: null, error: "Failed to retire equipment" };
+    return errAsync({ reason: "Failed to retire equipment" } as const);
   }
 }

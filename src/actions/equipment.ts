@@ -6,35 +6,36 @@ import {
   deleteEquipment,
   retireEquipment,
 } from "@/dal/equipment";
-import type { DbResult, Equipment } from "@/db/types";
+import { handleMutationError } from "./utils";
+import { okAsync } from "neverthrow";
 
 export async function addEquipmentAction(
   type: string,
   unit_number: string,
-): Promise<DbResult<Equipment>> {
+) {
   const res = await addEquipment(type, unit_number);
-  if (!res.error) {
-    updateTag(`equipment-${res.data?.org_id}`);
-  }
-  return res;
+  return res.match((data) => {
+    updateTag(`equipment-${data.org_id}`);
+    return okAsync(data);
+  }, handleMutationError);
 }
 
 export async function deleteEquipmentAction(
   unit_number: string,
-): Promise<DbResult<Equipment>> {
+) {
   const res = await deleteEquipment(unit_number);
-  if (!res.error) {
-    updateTag(`equipment-${res.data?.org_id}`);
-  }
-  return res;
+  return res.match((data) => {
+    updateTag(`equipment-${data.org_id}`);
+    return okAsync(data);
+  }, handleMutationError);
 }
 
 export async function retireEquipmentAction(
   unit_number: string,
-): Promise<DbResult<Equipment>> {
+) {
   const res = await retireEquipment(unit_number);
-  if (!res.error) {
-    updateTag(`equipment-${res.data?.org_id}`);
-  }
-  return res;
+  return res.match((data) => {
+    updateTag(`equipment-${data.org_id}`);
+    return okAsync(data);
+  }, handleMutationError);
 }
