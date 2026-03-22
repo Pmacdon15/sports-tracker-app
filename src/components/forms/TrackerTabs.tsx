@@ -3,8 +3,15 @@
 import type * as React from "react";
 import { Suspense } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { DbResult, Equipment, Guest, Transaction, UnitType } from "@/db/types";
+import type {
+  DbResult,
+  Equipment,
+  Guest,
+  Transaction,
+  UnitType,
+} from "@/db/types";
 import CheckoutTabFallback from "../fallbacks/checkout-tab-fallback";
+import ReturnsTabFallback from "../fallbacks/returns-tab-fallback";
 import CheckoutTab from "../tabs/check-out";
 import ReturnsTab from "../tabs/returns";
 
@@ -20,7 +27,7 @@ export function TrackerTabs({
   activeTab: React.ReactNode;
   completedRentalsPromise: Promise<DbResult<Transaction[]>>;
   equipmentPromise: Promise<DbResult<Equipment[]>>;
-  equipmentTypePromise: Promise<DbResult<UnitType[]>>
+  equipmentTypePromise: Promise<DbResult<UnitType[]>>;
   guestsPromise: Promise<DbResult<Guest[]>>;
   initialDatePromise: Promise<string | undefined>;
   settingsPromise: Promise<DbResult<Record<string, string>>>;
@@ -35,7 +42,7 @@ export function TrackerTabs({
 
       <Suspense fallback={<CheckoutTabFallback />}>
         <CheckoutTab
-        equipmentTypePromise={equipmentTypePromise}
+          equipmentTypePromise={equipmentTypePromise}
           equipmentPromise={equipmentPromise}
           guestsPromise={guestsPromise}
         />
@@ -43,7 +50,7 @@ export function TrackerTabs({
 
       {activeTab}
 
-      <Suspense>
+      <Suspense fallback={<ReturnsTabFallback />}>
         <ReturnsTab
           completedRentalsPromise={completedRentalsPromise}
           initialDatePromise={initialDatePromise}
