@@ -7,13 +7,16 @@ import { getSettings } from "@/dal/settings";
 import { getActiveRentals, getCompletedRentals } from "@/dal/transactions";
 import { getAllUnitTypes } from "@/dal/unit_types";
 
-export default async function TrackerPage(props: PageProps<"/tracker">) {
+export default function TrackerPage(props: PageProps<"/tracker">) {
   const rentalsPromise = getActiveRentals();
   const completedRentalsPromise = props.searchParams.then((params) => {
-    const dateStr = Array.isArray(params.date) ? params.date[0] : params.date;    
-    return getCompletedRentals(dateStr);
-  });
+    const dateStr = Array.isArray(params.date) ? params.date[0] : params.date;
+    const timezone = Array.isArray(params.timezone)
+      ? params.timezone[0]
+      : params.timezone;
 
+    return getCompletedRentals(dateStr, timezone);
+  });
   const dateStringPromise = props.searchParams.then((params) => {
     return Array.isArray(params.date) ? params.date[0] : params.date;
   });

@@ -21,7 +21,8 @@ export async function getActiveRentalsDb(
 
 export async function getCompletedRentalsDb(
   orgId: string,
-  date?: string,  
+  date?: string,
+  timezone?: string,
 ): Promise<Transaction[]> {
   "use cache: remote";
 
@@ -34,21 +35,21 @@ export async function getCompletedRentalsDb(
 
   const sql = getSql();
 
- const res = await sql`
-  SELECT 
-    t.*, 
-    e.unit_number as equipment_unit, 
-    e.type as equipment_type, 
-    g.name as guest_name
-  FROM transactions t
-  LEFT JOIN equipment e ON t.equipment_id = e.id
-  LEFT JOIN guests g ON t.guest_id = g.id
-  WHERE t.status = 'RETURNED' 
-    AND t.org_id = ${orgId}
-    -- Simplified date comparison
-    AND t.checked_in_at::date = ${targetDate}::date
-  ORDER BY t.checked_in_at DESC
-`;
+  const res = await sql`
+    SELECT 
+      t.*, 
+      e.unit_number as equipment_unit, 
+      e.type as equipment_type, 
+      g.name as guest_name
+    FROM transactions t
+    JOIN equipment e ON t.equipment_id = e.id
+    JOIN guests g ON t.guest_id = g.id
+    WHERE t.status = 'RETURNED' 
+      AND t.org_id = ${orgId}
+      -- Compare against our resolved targetDate
+      AND (t.checked_in_at AT TIME ZONE 'UTC' AT TIME ZONE ${timezone})::date = ${targetDate}::date
+    ORDER BY t.checked_in_at DESC
+  `;
 
   return res as unknown as Transaction[];
 }

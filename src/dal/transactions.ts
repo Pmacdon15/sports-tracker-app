@@ -28,13 +28,14 @@ export async function getActiveRentals(): Promise<DbResult<Transaction[]>> {
 }
 
 export async function getCompletedRentals(
-  date?: string,  
+  date?: string, 
+  timeZone?:string 
 ): Promise<DbResult<Transaction[]>> {
   try {
     const { orgId } = await auth.protect();
     if (!orgId) throw new Error("Organization selection is required.");
 
-    const data = await getCompletedRentalsDb(orgId, date);
+    const data = await getCompletedRentalsDb(orgId, date,timeZone);
     return { data, error: null };
   } catch (e: unknown) {
     console.error("Error fetching completed rentals:", e);
