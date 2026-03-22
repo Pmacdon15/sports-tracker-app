@@ -1,8 +1,7 @@
-import { Clock } from "lucide-react";
-import { use, ViewTransition } from "react";
+import { Suspense, ViewTransition } from "react";
 import type { DbResult, Transaction } from "@/db/types";
-import { cn } from "@/lib/utils";
 import ReturnButton from "../buttons/return-button";
+import ActiveDuration from "../ui/active-duration";
 import {
   Card,
   CardContent,
@@ -12,7 +11,7 @@ import {
 } from "../ui/card";
 import { TabsContent } from "../ui/tabs";
 
-export default async  function ActiveTab({
+export default async function ActiveTab({
   rentalsPromise,
   settingsPromise,
 }: {
@@ -20,32 +19,11 @@ export default async  function ActiveTab({
   settingsPromise: Promise<DbResult<Record<string, string>>>;
 }) {
   const rentalsRes = await rentalsPromise;
-  const settingsRes = await settingsPromise;
+  // const settingsRes = await settingsPromise;
 
   const activeRentals = rentalsRes.data || [];
-  const settings = settingsRes.data || {};
-  const error = rentalsRes.error || settingsRes.error;
-
-  function formatDuration(checkedOutAt: Date) {
-    const minOut = Math.floor(
-      (Date.now() - new Date(checkedOutAt).getTime()) / (1000 * 60),
-    );
-    const h = Math.floor(minOut / 60);
-    const m = minOut % 60;
-    return `${h}h ${m}m`;
-  }
-
-  function getDurationColor(checkedOutAt: Date) {
-    const yellow = parseFloat(settings.yellow_trigger_hours || "2");
-    const red = parseFloat(settings.red_trigger_hours || "3");
-    const hoursOut =
-      (Date.now() - new Date(checkedOutAt).getTime()) / (1000 * 60 * 60);
-
-    if (hoursOut >= red) return "text-destructive font-bold";
-    if (hoursOut >= yellow)
-      return "text-yellow-600 font-bold dark:text-yellow-500";
-    return "text-green-600 dark:text-green-500";
-  }
+  // const settings = settingsRes.data || {};
+  const error = rentalsRes.error 
 
   return (
     <TabsContent value="active">
@@ -79,15 +57,12 @@ export default async  function ActiveTab({
                         </span>{" "}
                         ({rental.equipment_type})
                       </span>
-                      <span
-                        className={cn(
-                          "text-xs flex items-center gap-1 mt-1",
-                          getDurationColor(rental.checked_out_at),
-                        )}
-                      >
-                        <Clock className="w-3 h-3" /> Out for{" "}
-                        {formatDuration(rental.checked_out_at)}
-                      </span>
+                      <Suspense>
+                        <ActiveDuration
+                          checkedOutAt={rental.checked_out_at}
+                          settingsPromise={settingsPromise}
+                        />
+                      </Suspense>
                     </div>
                     <ReturnButton equipment_unit={rental.equipment_unit} />
                   </div>
