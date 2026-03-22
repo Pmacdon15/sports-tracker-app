@@ -53,6 +53,40 @@ export async function getCompletedRentalsDb(
   return res as unknown as Transaction[];
 }
 
+export async function getCompletedRentalsPaginatedDb(
+  orgId: string,
+  date: string,
+  limit = 20,
+  offset = 0,
+  search?: string,
+): Promise<Transaction[]> {
+  const sql = getSql();
+  const searchPattern = search ? `%${search}%` : null;
+
+  const res = await sql`
+    SELECT 
+      t.*, 
+      e.unit_number as equipment_unit, 
+      e.type as equipment_type, 
+      g.name as guest_name
+    FROM transactions t
+    LEFT JOIN equipment e ON t.equipment_id = e.id
+    LEFT JOIN guests g ON t.guest_id = g.id
+    WHERE t.status = 'RETURNED' 
+      AND t.org_id = ${orgId}
+      AND t.checked_in_at::date = ${date}::date
+      ${
+        searchPattern
+          ? sql`AND (g.name ILIKE ${searchPattern} OR e.unit_number ILIKE ${searchPattern} OR e.type ILIKE ${searchPattern})`
+          : sql``
+      }
+    ORDER BY t.checked_in_at DESC
+    LIMIT ${limit} OFFSET ${offset}
+  `;
+
+  return res as unknown as Transaction[];
+}
+
 export async function getGuestTransactionsDb(
   orgId: string,
   guestId: number,

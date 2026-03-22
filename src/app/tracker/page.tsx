@@ -4,16 +4,12 @@ import ActiveTab from "@/components/tabs/active";
 import { getAllEquipment } from "@/dal/equipment";
 import { getAllGuests } from "@/dal/guests";
 import { getSettings } from "@/dal/settings";
-import { getActiveRentals, getCompletedRentals } from "@/dal/transactions";
+import { getActiveRentals } from "@/dal/transactions";
 import { getAllUnitTypes } from "@/dal/unit_types";
 
 export default async function TrackerPage(props: PageProps<"/tracker">) {
   const rentalsPromise = getActiveRentals();
-  const completedRentalsPromise = props.searchParams.then((params) => {
-    const dateStr = Array.isArray(params.date) ? params.date[0] : params.date;    
-    return getCompletedRentals(dateStr);
-  });
-
+  
   const dateStringPromise = props.searchParams.then((params) => {
     return Array.isArray(params.date) ? params.date[0] : params.date;
   });
@@ -46,7 +42,6 @@ export default async function TrackerPage(props: PageProps<"/tracker">) {
           </Suspense>
         }
         equipmentPromise={equipmentPromise}
-        completedRentalsPromise={completedRentalsPromise}
         equipmentTypePromise={equipmentTypePromise}
         guestsPromise={guestsPromise}
         initialDatePromise={dateStringPromise}

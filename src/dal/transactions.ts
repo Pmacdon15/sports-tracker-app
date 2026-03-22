@@ -6,6 +6,7 @@ import {
   checkoutEquipmentDb,
   getActiveRentalsDb,
   getCompletedRentalsDb,
+  getCompletedRentalsPaginatedDb,
   getGuestTransactionsDb,
   returnEquipmentDb,
 } from "@/db/transactions";
@@ -38,6 +39,36 @@ export async function getCompletedRentals(
     return { data, error: null };
   } catch (e: unknown) {
     console.error("Error fetching completed rentals:", e);
+    return {
+      data: null,
+      error: "Failed to fetch completed rentals",
+    };
+  }
+}
+
+export async function getCompletedRentalsPaginated(
+  page = 1,
+  limit = 20,
+  search?: string,
+  date?: string,
+): Promise<DbResult<Transaction[]>> {
+  try {
+    const { orgId } = await auth.protect();
+    if (!orgId) throw new Error("Organization selection is required.");
+
+    const targetDate = date ?? new Date().toISOString().split("T")[0];
+    const offset = (page - 1) * limit;
+
+    const data = await getCompletedRentalsPaginatedDb(
+      orgId,
+      targetDate,
+      limit,
+      offset,
+      search,
+    );
+    return { data, error: null };
+  } catch (e: unknown) {
+    console.error("Error fetching paginated completed rentals:", e);
     return {
       data: null,
       error: "Failed to fetch completed rentals",

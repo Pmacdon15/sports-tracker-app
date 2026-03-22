@@ -1,5 +1,5 @@
 import { Clock } from "lucide-react";
-import { use, ViewTransition } from "react";
+import { ViewTransition } from "react";
 import type { DbResult, Transaction } from "@/db/types";
 import { cn } from "@/lib/utils";
 import ReturnButton from "../buttons/return-button";
@@ -12,15 +12,15 @@ import {
 } from "../ui/card";
 import { TabsContent } from "../ui/tabs";
 
-export default function ActiveTab({
+export default async function ActiveTab({
   rentalsPromise,
   settingsPromise,
 }: {
   rentalsPromise: Promise<DbResult<Transaction[]>>;
   settingsPromise: Promise<DbResult<Record<string, string>>>;
 }) {
-  const rentalsRes = use(rentalsPromise);
-  const settingsRes = use(settingsPromise);
+  const rentalsRes = await rentalsPromise;
+  const settingsRes = await settingsPromise;
 
   const activeRentals = rentalsRes.data || [];
   const settings = settingsRes.data || {};
