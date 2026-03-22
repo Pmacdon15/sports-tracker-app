@@ -81,7 +81,7 @@ export async function getGuestStatsDb(
 export async function getGlobalGuestStatsDb(
   orgId: string,
 ): Promise<GlobalGuestStats> {
-  "use cache: remote";
+  "use cache";
   cacheTag(`guest-global-stats-${orgId}`);
   const sql = getSql();
   const res = await sql`

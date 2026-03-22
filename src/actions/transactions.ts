@@ -22,13 +22,14 @@ export async function checkoutEquipmentAction(
 
 export async function returnEquipmentAction(
   unit_number: string,
+  timezone: string,
 ): Promise<DbResult<Transaction>> {
   const res = await returnEquipment(unit_number);
+
   if (!res.error) {
     updateTag(`active-rentals-${res.data?.org_id}`);
-    // updateTag(`completed-rentals-${res.data?.org_id}`);
     const date = res.data?.checked_in_at?.toISOString().split("T")[0];
-    updateTag(`completed-rentals-${res.data?.org_id}-${date}`);
+    updateTag(`completed-rentals-${res.data?.org_id}-${date}-${timezone}`);
     updateTag(`equipment-${res.data?.org_id}`);
     updateTag(`guest-global-stats-${res.data?.org_id}`);
     updateTag(`guest-transactions-${res.data?.org_id}-${res.data?.guest_id}`);

@@ -3,7 +3,7 @@ import { getSql } from "./db";
 import type { UnitType } from "./types";
 
 export async function getAllUnitTypesDb(orgId: string): Promise<UnitType[]> {
-  "use cache: remote";
+  "use cache";
   cacheTag(`unit-types-${orgId}`);
   const sql = getSql();
   const res = await sql`

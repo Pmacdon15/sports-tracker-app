@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import ActiveTabFallback from "@/components/fallbacks/active-tab-fallback";
 import { TrackerTabs } from "@/components/forms/TrackerTabs";
 import ActiveTab from "@/components/tabs/active";
 import { getAllEquipment } from "@/dal/equipment";
@@ -41,7 +42,7 @@ export default function TrackerPage(props: PageProps<"/tracker">) {
 
       <TrackerTabs
         activeTab={
-          <Suspense>
+          <Suspense fallback={<ActiveTabFallback />}>
             <ActiveTab
               rentalsPromise={rentalsPromise}
               settingsPromise={settingsPromise}

@@ -29,7 +29,8 @@ export function useReturnMutation() {
   // const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (unit_number: string) => {
-      const res = await returnEquipmentAction(unit_number);
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const res = await returnEquipmentAction(unit_number, timezone);
       if (res.error) throw new Error(res.error);
       return res.data;
     },

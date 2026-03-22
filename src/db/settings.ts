@@ -3,7 +3,7 @@ import { getSql } from "./db";
 import type { Setting } from "./types";
 
 export async function getSettingsDb(orgId: string): Promise<Setting[]> {
-  "use cache: remote";
+  "use cache";
   cacheTag(`settings-${orgId}`);
   const sql = getSql();
   const res = await sql`
