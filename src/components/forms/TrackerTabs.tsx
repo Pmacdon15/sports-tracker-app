@@ -26,7 +26,7 @@ export function TrackerTabs({
   settingsPromise: Promise<DbResult<Record<string, string>>>;
 }) {
   return (
-    <Tabs defaultValue="active" className="w-full max-w-4xl mx-auto">
+    <Tabs defaultValue="checkout" className="w-full max-w-4xl mx-auto">
       <TabsList className="grid w-full grid-cols-3 mb-8">
         <TabsTrigger value="checkout">Checkout</TabsTrigger>
         <TabsTrigger value="active">Who's Out</TabsTrigger>
