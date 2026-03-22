@@ -15,6 +15,7 @@ import { TabsContent } from "../ui/tabs";
 import { TimezoneRedirect } from "../auth/TimezoneRedirect";
 import { cn } from "@/lib/utils";
 import { Clock } from "lucide-react";
+import { Badge } from "../ui/badge";
 
 export default function ReturnsTab({
   completedRentalsPromise,
@@ -79,6 +80,20 @@ export default function ReturnsTab({
     );
   });
 
+  const averageDuration = React.useMemo(() => {
+    if (filteredCompletedRentals.length === 0) return null;
+    const totalMinutes = filteredCompletedRentals.reduce((acc, rental) => {
+      if (!rental.checked_in_at) return acc;
+      const start = new Date(rental.checked_out_at).getTime();
+      const end = new Date(rental.checked_in_at).getTime();
+      return acc + (end - start) / (1000 * 60);
+    }, 0);
+    const avgMinutes = Math.round(totalMinutes / filteredCompletedRentals.length);
+    const h = Math.floor(avgMinutes / 60);
+    const m = avgMinutes % 60;
+    return h > 0 ? `${h}h ${m}m` : `${m}m`;
+  }, [filteredCompletedRentals]);
+
   const handleDateChange = (newDate: string) => {
     setSelectedDate(newDate);
     const params = new URLSearchParams(searchParams.toString());
@@ -92,7 +107,14 @@ export default function ReturnsTab({
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <CardTitle>Daily Returns</CardTitle>
+              <div className="flex items-center gap-2">
+                <CardTitle>Daily Returns</CardTitle>
+                {averageDuration && (
+                  <Badge variant="secondary" className="font-normal text-muted-foreground">
+                    Avg: {averageDuration}
+                  </Badge>
+                )}
+              </div>
               <CardDescription>
                 View and search returns for {selectedDate}.
               </CardDescription>
