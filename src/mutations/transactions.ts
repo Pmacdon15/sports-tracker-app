@@ -18,10 +18,19 @@ export function useCheckoutMutation() {
       type?: string;
     }) => {
       const res = await checkoutEquipmentAction(unit_number, guest_name, type);
-      if (res.error) throw new Error(res.error);
-      return res.data;
+
+      if (res && "message" in res) {
+        throw new Error(res.message);
+      }
+
+      return res;
     },
-    onSuccess: () => {},
+    onSuccess: (data) => {
+      console.log("Success!", data);
+    },
+    onError: (error) => {
+      console.error("Mutation failed:", error.message);
+    },
   });
 }
 
@@ -31,8 +40,11 @@ export function useReturnMutation() {
     mutationFn: async (unit_number: string) => {
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       const res = await returnEquipmentAction(unit_number, timezone);
-      if (res.error) throw new Error(res.error);
-      return res.data;
+      if (res && "message" in res) {
+        throw new Error(res.message);
+      }
+
+      return res;
     },
     onSuccess: () => {
       // queryClient.invalidateQueries({

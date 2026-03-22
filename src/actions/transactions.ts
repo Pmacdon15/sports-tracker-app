@@ -1,38 +1,47 @@
 "use server";
 
+import { okAsync } from "neverthrow";
 import { updateTag } from "next/cache";
+import { redirect } from "next/navigation";
 import { checkoutEquipment, returnEquipment } from "@/dal/transactions";
 import type { DbResult, Transaction } from "@/db/types";
+import { handleMutationError } from "./utils";
 
 export async function checkoutEquipmentAction(
   unit_number: string,
   guest_name: string,
   type?: string,
-): Promise<DbResult<Transaction>> {
+) {
   const res = await checkoutEquipment(unit_number, guest_name, type);
-  if (!res.error) {
-    updateTag(`active-rentals-${res.data?.org_id}`);
-    updateTag(`equipment-${res.data?.org_id}`);
-    updateTag(`unit-types-${res.data?.org_id}`);
-    updateTag(`guest-global-stats-${res.data?.org_id}`);
-    updateTag(`guest-transactions-${res.data?.org_id}-${res.data?.guest_id}`);
-  }
-  return res;
+
+  return res.match(
+    (checkedOut) => {
+      updateTag(`active-rentals-${checkedOut.org_id}`);
+      updateTag(`equipment-${checkedOut.org_id}`);
+      updateTag(`unit-types-${checkedOut.org_id}`);
+      updateTag(`guest-global-stats-${checkedOut.org_id}`);
+      updateTag(
+        `guest-transactions-${checkedOut.org_id}-${checkedOut.guest_id}`,
+      );
+      return okAsync(checkedOut);
+    },
+    handleMutationError,
+  );
 }
 
 export async function returnEquipmentAction(
   unit_number: string,
   timezone: string,
-): Promise<DbResult<Transaction>> {
+) {
   const res = await returnEquipment(unit_number);
 
-  if (!res.error) {
-    updateTag(`active-rentals-${res.data?.org_id}`);
-    const date = res.data?.checked_in_at?.toISOString().split("T")[0];
-    updateTag(`completed-rentals-${res.data?.org_id}-${date}-${timezone}`);
-    updateTag(`equipment-${res.data?.org_id}`);
-    updateTag(`guest-global-stats-${res.data?.org_id}`);
-    updateTag(`guest-transactions-${res.data?.org_id}-${res.data?.guest_id}`);
-  }
-  return res;
+  return res.match((transaction) => {
+    updateTag(`active-rentals-${transaction.org_id}`);
+    const date = transaction.checked_in_at?.toISOString().split("T")[0];
+    updateTag(`completed-rentals-${transaction.org_id}-${date}-${timezone}`);
+    updateTag(`equipment-${transaction.org_id}`);
+    updateTag(`guest-global-stats-${transaction.org_id}`);
+    updateTag(`guest-transactions-${transaction.org_id}-${transaction.guest_id}`);
+    return okAsync(transaction);
+  }, handleMutationError);
 }

@@ -1,4 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
+import { errAsync, okAsync } from "neverthrow";
+import { connection } from "next/server";
 import { isOverMemberShipLimit } from "@/db/auth";
 import { addEquipmentDb, getEquipmentByUnitDb } from "@/db/equipment";
 import { createGuestDb, getGuestByNameDb } from "@/db/guests";
@@ -11,8 +13,6 @@ import {
 } from "@/db/transactions";
 import type { DbResult, Transaction } from "@/db/types";
 import { addUnitTypeDb } from "@/db/unit_types";
-import { connection } from "next/server";
-
 export async function getActiveRentals(): Promise<DbResult<Transaction[]>> {
   await connection();
   try {
@@ -28,14 +28,14 @@ export async function getActiveRentals(): Promise<DbResult<Transaction[]>> {
 }
 
 export async function getCompletedRentals(
-  date?: string, 
-  timeZone?:string 
+  date?: string,
+  timeZone?: string,
 ): Promise<DbResult<Transaction[]>> {
   try {
     const { orgId } = await auth.protect();
     if (!orgId) throw new Error("Organization selection is required.");
 
-    const data = await getCompletedRentalsDb(orgId, date,timeZone);
+    const data = await getCompletedRentalsDb(orgId, date, timeZone);
     return { data, error: null };
   } catch (e: unknown) {
     console.error("Error fetching completed rentals:", e);
@@ -68,14 +68,15 @@ export async function checkoutEquipment(
   unit_number: string,
   guest_name: string,
   type?: string,
-): Promise<DbResult<Transaction>> {
+) {
+  const { orgId, userId } = await auth.protect();
+  if (!orgId) return errAsync({ reason: "Unauthorized" } as const);
   try {
-    const { orgId, userId } = await auth.protect();
-    if (!orgId) throw new Error("Organization selection is required.");
-
     const isOverMemberShipLimitValue = await isOverMemberShipLimit(orgId);
     if (isOverMemberShipLimitValue)
-      throw new Error("Over organization membership limit.");
+      return errAsync({
+        reason: "Over organization membership limit.",
+      } as const);
 
     let guest = await getGuestByNameDb(orgId, guest_name);
 
@@ -83,69 +84,61 @@ export async function checkoutEquipment(
       guest = await createGuestDb(orgId, guest_name);
     }
 
-    if (!guest) throw new Error("Failed to create or retrieve guest.");
+    if (!guest)
+      return errAsync({
+        reason: "Failed to create or retrieve guest.",
+      } as const);
 
     let equipment = await getEquipmentByUnitDb(orgId, unit_number);
 
     if (!equipment) {
       if (!type) {
-        throw new Error(
-          `Equipment ${unit_number} not found and no type provided for creation.`,
-        );
+        return errAsync({
+          reason: `Equipment not found and no type provided for creation.`,
+        } as const);
       }
       equipment = await addEquipmentDb(orgId, type, unit_number);
       // Ensure the unit type is in the registry
-      await addUnitTypeDb(orgId, type);
+      addUnitTypeDb(orgId, type);
     }
 
     if (equipment.status !== "AVAILABLE") {
-      throw new Error(`Equipment ${unit_number} is ${equipment.status}.`);
+      return errAsync({
+        reason: `Equipment is not available`,
+      } as const);
     }
 
-    const data = await checkoutEquipmentDb(
-      userId,
-      orgId,
-      equipment.id,
-      guest.id,
+    return okAsync(
+      await checkoutEquipmentDb(userId, orgId, equipment.id, guest.id),
     );
-    return { data, error: null };
+    // return { data, error: null };
   } catch (e: unknown) {
     console.error("Error checking out equipment:", e);
 
-    if (e instanceof Error) {
-      if (e.message === "Over organization membership limit.") {
-        return { data: null, error: "Over organization membership limit." };
-      }
-
-      return { data: null, error: e.message };
-    }
-
-    return { data: null, error: "Failed to checkout equipment" };
+    return errAsync({ reason: "Unknown error." } as const);
   }
 }
 
-export async function returnEquipment(
-  unit_number: string,
-): Promise<DbResult<Transaction>> {
+export async function returnEquipment(unit_number: string) {
   try {
     const { orgId, userId } = await auth.protect();
-    if (!orgId) throw new Error("Organization selection is required.");
+    if (!orgId) return errAsync({ reason: "Unauthorized" } as const);
 
     const equipment = await getEquipmentByUnitDb(orgId, unit_number);
 
-    if (!equipment) throw new Error(`Equipment ${unit_number} not found.`);
+    if (!equipment) return errAsync({ reason: "Equipment not found." } as const);
     if (
       equipment.status !== "CHECKED_OUT" &&
       equipment.status !== "DELETED" &&
       equipment.status !== "RETIRED"
     ) {
-      throw new Error(`Equipment ${unit_number} is not checked out.`);
+      return errAsync({ reason: "Equipment is not checked out." } as const);
     }
 
     const data = await returnEquipmentDb(orgId, equipment.id, userId);
-    return { data, error: null };
+    return okAsync(data);
   } catch (e: unknown) {
     console.error("Error returning equipment:", e);
-    return { data: null, error: "Failed to return equipment" };
+    return errAsync({ reason: "Unknown error." } as const);
   }
 }

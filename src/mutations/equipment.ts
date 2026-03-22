@@ -13,8 +13,11 @@ export function useAddEquipmentMutation() {
       unit_number: string;
     }) => {
       const res = await addEquipmentAction(type, unit_number);
-      if (res.error) throw new Error(res.error);
-      return res.data;
+        if (res && "message" in res) {
+        throw new Error(res.message);
+      }
+
+      return res;
     },
     onSuccess: () => {},
   });
@@ -24,8 +27,11 @@ export function useDeleteEquipmentMutation() {
   return useMutation({
     mutationFn: async (unit_number: string) => {
       const res = await deleteEquipmentAction(unit_number);
-      if (res.error) throw new Error(res.error);
-      return res.data;
+        if (res && "message" in res) {
+        throw new Error(res.message);
+      }
+
+      return res
     },
     onSuccess: () => {},
   });
@@ -35,8 +41,11 @@ export function useRetireEquipmentMutation() {
   return useMutation({
     mutationFn: async (unit_number: string) => {
       const res = await retireEquipmentAction(unit_number);
-      if (res.error) throw new Error(res.error);
-      return res.data;
+        if (res && "message" in res) {
+        throw new Error(res.message);
+      }
+
+      return res;
     },
     onSuccess: () => {},
   });

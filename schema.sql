@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS transactions (
   checked_out_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   checked_in_at TIMESTAMP,
   checked_in_by VARCHAR(40),
-   checked_out_by VARCHAR(40),
+  checked_out_by VARCHAR(40),
   status VARCHAR(20) DEFAULT 'OUT'
 );
 
