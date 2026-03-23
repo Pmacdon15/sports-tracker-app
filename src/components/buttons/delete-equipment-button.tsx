@@ -1,18 +1,26 @@
 import { useAuth } from "@clerk/nextjs";
-import { toast } from "sonner";
+import { startTransition } from "react";
 import { useDeleteEquipmentMutation } from "@/mutations/equipment";
 import { Button } from "../ui/button";
 
 export function InventoryDeleteButton({
   unit_number,
+  onDelete,
 }: {
   unit_number: string;
+  onDelete: () => void;
 }) {
   const { has } = useAuth();
   const isAdmin = has({ role: "org:admin" });
 
   const { mutate: deleteEq, isPending } = useDeleteEquipmentMutation();
 
+  function handleDelete(unit_number: string) {
+    startTransition(async () => {
+      onDelete();
+    });
+    deleteEq(unit_number);
+  }
   if (!isAdmin) return null;
   return (
     <Button
@@ -21,10 +29,7 @@ export function InventoryDeleteButton({
       // size="icon"
       className="text-destructive hover:bg-destructive/10"
       onClick={() => {
-        deleteEq(unit_number, {
-          onSuccess: () => toast.success(`Deleted equipment ${unit_number}`),
-          onError: (error: Error) => toast.error(error.message),
-        });
+        handleDelete(unit_number);
       }}
       disabled={isPending}
     >
