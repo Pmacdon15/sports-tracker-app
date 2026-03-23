@@ -1,22 +1,23 @@
 "use client";
 import { CornerDownLeftIcon } from "lucide-react";
-import { toast } from "sonner";
+import { startTransition } from "react";
 import { useReturnMutation } from "@/mutations/transactions";
 import { Button } from "../ui/button";
 
 export default function ReturnButton({
   equipment_unit,
+  onReturn,
 }: {
   equipment_unit: string;
+  onReturn: (action: string) => void;
 }) {
   const { mutate: returnItem, isPending } = useReturnMutation();
 
   async function handleReturn(unit_number: string) {
-    returnItem(unit_number, {
-      onSuccess: () =>
-        toast.success(`Successfully returned unit ${unit_number}`),
-      onError: (error: Error) => toast.error(error.message),
+    startTransition(async () => {
+      onReturn(unit_number);
     });
+    returnItem(unit_number);
   }
   return (
     <Button

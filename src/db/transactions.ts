@@ -85,11 +85,14 @@ export async function checkoutEquipmentDb(
   const sql = getSql();
   const res = await sql`
     WITH update_eq AS (
-      UPDATE equipment SET status = 'CHECKED_OUT' WHERE id = ${equipmentId} RETURNING id
+      UPDATE equipment 
+      SET status = 'CHECKED_OUT' 
+      WHERE id = ${equipmentId} 
+      RETURNING id, unit_number, type
     )
     INSERT INTO transactions (equipment_id, guest_id, status, org_id, checked_out_by) 
     VALUES ((SELECT id FROM update_eq), ${guestId}, 'OUT', ${orgId}, ${userId}) 
-    RETURNING *
+    RETURNING *, (SELECT unit_number FROM update_eq) as equipment_unit, (SELECT type FROM update_eq) as equipment_type
   `;
   return res[0] as unknown as Transaction;
 }
@@ -105,17 +108,18 @@ export async function returnEquipmentDb(
       UPDATE equipment 
       SET status = 'AVAILABLE' 
       WHERE id = ${equipmentId} 
-      RETURNING id
+      RETURNING id, unit_number
     )
-    UPDATE transactions 
+    UPDATE transactions t
     SET 
       status = 'RETURNED', 
       checked_in_at = CURRENT_TIMESTAMP,
       checked_in_by = ${userId}
-    WHERE equipment_id = (SELECT id FROM update_eq) 
-      AND status = 'OUT' 
-      AND org_id = ${orgId}
-    RETURNING *
+    FROM update_eq u
+    WHERE t.equipment_id = u.id 
+      AND t.status = 'OUT' 
+      AND t.org_id = ${orgId}
+    RETURNING t.*, u.unit_number as equipment_unit
   `;
 
   return (res[0] as unknown as Transaction) || null;

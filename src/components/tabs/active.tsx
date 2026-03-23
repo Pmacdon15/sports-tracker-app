@@ -1,4 +1,5 @@
-import { Suspense, ViewTransition } from "react";
+"use client";
+import { Suspense, use, useOptimistic, ViewTransition } from "react";
 import type { DbResult, Transaction } from "@/db/types";
 import ReturnButton from "../buttons/return-button";
 import ActiveDuration from "../ui/active-duration";
@@ -11,19 +12,32 @@ import {
 } from "../ui/card";
 import { TabsContent } from "../ui/tabs";
 
-export default async function ActiveTab({
+export default function ActiveTab({
   rentalsPromise,
   settingsPromise,
 }: {
   rentalsPromise: Promise<DbResult<Transaction[]>>;
   settingsPromise: Promise<DbResult<Record<string, string>>>;
 }) {
-  const rentalsRes = await rentalsPromise;
-  // const settingsRes = await settingsPromise;
+  const rentalsRes = use(rentalsPromise);
 
-  const activeRentals = rentalsRes.data || [];
-  // const settings = settingsRes.data || {};
-  const error = rentalsRes.error 
+  // Inside your ActiveTab component
+  const [optimisticState, setOptimistic] = useOptimistic(
+    rentalsRes,
+    (state, unitNumberToRemove: string) => {
+      if (!state.data) return state;
+
+      return {
+        ...state,
+        data: state.data.filter(
+          (rental) => rental.equipment_unit !== unitNumberToRemove,
+        ),
+      };
+    },
+  );
+  const activeRentals = optimisticState.data || [];
+
+  const error = rentalsRes.error;
 
   return (
     <TabsContent value="active">
@@ -64,7 +78,10 @@ export default async function ActiveTab({
                         />
                       </Suspense>
                     </div>
-                    <ReturnButton equipment_unit={rental.equipment_unit} />
+                    <ReturnButton
+                      equipment_unit={rental.equipment_unit}
+                      onReturn={() => setOptimistic(rental.equipment_unit)}
+                    />
                   </div>
                 </ViewTransition>
               ))}
