@@ -5,6 +5,7 @@ import {
   checkoutEquipmentAction,
   returnEquipmentAction,
 } from "@/actions/transactions";
+import type { CheckoutInput } from "@/zod/schemas/transaction-schema";
 
 export function useCheckoutMutation() {
   return useMutation({
@@ -12,11 +13,7 @@ export function useCheckoutMutation() {
       unit_number,
       guest_name,
       type,
-    }: {
-      unit_number: string;
-      guest_name: string;
-      type?: string;
-    }) => {
+    }: CheckoutInput) => {
       const res = await checkoutEquipmentAction(unit_number, guest_name, type);
 
       if (res && "message" in res) {
@@ -46,10 +43,7 @@ export function useReturnMutation() {
 
       return res;
     },
-    onSuccess: () => {
-      // queryClient.invalidateQueries({
-      //   queryKey: ["guest-stats-infinite", search],
-      // });
+    onSuccess: () => {      
     },
   });
 }

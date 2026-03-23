@@ -1,7 +1,8 @@
 "use client";
 
 import { useAuth } from "@clerk/nextjs";
-import { use, useRef, useState } from "react";
+import { useForm } from "@tanstack/react-form";
+import { use } from "react";
 import { toast } from "sonner";
 import {
   Card,
@@ -11,11 +12,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Combobox } from "@/components/ui/combobox";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormFieldCombobox, FormFieldInput } from "@/components/ui/form-field";
 import type { DbResult, UnitType } from "@/db/types";
 import { useAddEquipmentMutation } from "@/mutations/equipment";
+import { createInventorySchema } from "@/zod/schemas/equipment-schema";
 import { Button } from "../ui/button";
 
 export function InventoryCreateForm({
@@ -23,15 +23,11 @@ export function InventoryCreateForm({
 }: {
   equipmentTypePromise: Promise<DbResult<UnitType[]>>;
 }) {
-  const formRef = useRef<HTMLFormElement>(null);
   const { has } = useAuth();
   const isAdmin = has({ role: "org:admin" });
   const { mutate: addEquipment, isPending } = useAddEquipmentMutation();
 
-  const [selectedType, setSelectedType] = useState<string>("Raft");
-
   const data = use(equipmentTypePromise);
-
   const unitTypes = data.data ?? [];
 
   const unitTypeOptions = unitTypes.map((t) => ({
@@ -39,52 +35,67 @@ export function InventoryCreateForm({
     value: t.name,
   }));
 
-  if (!isAdmin) return null;
-  const handleAdd = async (formData: FormData) => {
-    const type = selectedType;
-    const unit_number = formData.get("unit_number") as string;
+  const form = useForm({
+    defaultValues: {
+      unit_number: "",
+      type: "",
+    },
+    onSubmit: async ({ value }) => {
+      // Destructure from the validated value object
+      const { unit_number, type } = value;
 
-    addEquipment(
-      { type, unit_number },
-      {
-        onSuccess: () => {
-          toast.success(`Added equipment ${unit_number}`);
-          formRef.current?.reset();
+      addEquipment(
+        { type, unit_number },
+        {
+          onSuccess: () => {
+            toast.success(`Added equipment ${unit_number}`);
+            form.reset();
+          },
+          onError: (error: Error) => toast.error(error.message),
         },
-        onError: (error: Error) => toast.error(error.message),
-      },
-    );
-  };
+      );
+    },
+    validators: {
+      onSubmit: createInventorySchema,
+      onChange: createInventorySchema,
+    },
+  });
+
+  if (!isAdmin) return null;
 
   return (
-    // <div className="grid md:grid-cols-3 gap-8">
     <div className="md:col-span-1">
       <Card className="sticky top-24 border-primary/20 shadow-sm">
         <CardHeader>
           <CardTitle>Add Equipment</CardTitle>
           <CardDescription>Standard unit into the DB.</CardDescription>
         </CardHeader>
-        <form ref={formRef} action={handleAdd}>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            form.handleSubmit();
+          }}
+        >
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label>Unit Number (ID)</Label>
-              <Input
-                name="unit_number"
-                placeholder="e.g. R-402"
-                required
-                disabled={isPending}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Type</Label>
-              <Combobox
-                options={unitTypeOptions}
-                value={selectedType}
-                onValueChange={setSelectedType}
-                placeholder="Select or Type Type"
-                allowCustom={true}
-              />
-            </div>
+            <FormFieldInput
+              formApi={form}
+              name="unit_number"
+              label="Unit Number (ID)"
+              validator={createInventorySchema.shape.unit_number}
+              placeholder="e.g. R-402"
+              disabled={isPending}
+            />
+
+            <FormFieldCombobox
+              formApi={form}
+              name="type"
+              label="Type"
+              validator={createInventorySchema.shape.type}
+              options={unitTypeOptions}
+              placeholder="Select or Type Type"
+              allowCustom={true}
+              disabled={isPending}
+            />
           </CardContent>
           <CardFooter>
             <Button
@@ -98,6 +109,5 @@ export function InventoryCreateForm({
         </form>
       </Card>
     </div>
-    // </div>
   );
 }

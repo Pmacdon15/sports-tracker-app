@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Check, ChevronsUpDown, Plus } from "lucide-react";
 import * as React from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,36 +22,54 @@ interface ComboboxProps {
   options: { label: string; value: string }[];
   value: string;
   onValueChange: (val: string) => void;
+  onBlur?: () => void;
   placeholder?: string;
   allowCustom?: boolean;
+  disabled?: boolean;
 }
 
 export function Combobox({
   options,
   value,
   onValueChange,
+  onBlur,
   placeholder = "Select option...",
   allowCustom = false,
+  disabled = false,
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false);
   const [inputValue, setInputValue] = React.useState("");
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover 
+      open={open} 
+      onOpenChange={(isOpen) => {
+        setOpen(isOpen);
+        if (!isOpen && onBlur) onBlur(); // Mark as touched when closed
+      }}
+    >
       <PopoverTrigger asChild>
         <Button
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full justify-between"
+          disabled={disabled}
+          onBlur={onBlur}
+          className={cn(
+            "w-full justify-between font-normal transition-all",
+            !value && "text-muted-foreground",
+            disabled && "opacity-50 cursor-not-allowed bg-muted"
+          )}
         >
-          {value
-            ? options.find((option) => option.value === value)?.label || value
-            : placeholder}
+          <span className="truncate">
+            {value
+              ? options.find((option) => option.value === value)?.label || value
+              : placeholder}
+          </span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-75 p-0" align="start">
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
         <Command>
           <CommandInput
             placeholder={`Search ${placeholder.toLowerCase()}...`}
@@ -59,37 +77,37 @@ export function Combobox({
             onValueChange={setInputValue}
           />
           <CommandList>
-            <CommandEmpty>
+            <CommandEmpty className="p-1">
               {allowCustom && inputValue.trim() !== "" ? (
                 <Button
-                  className="p-2 text-sm max-w-full truncate text-gray-200 hover:text-gray-600 hover:bg-muted cursor-pointer rounded-sm"
+                  variant="ghost"
+                  className="w-full justify-start gap-2 px-2 py-1.5 text-sm font-normal"
                   onClick={() => {
                     onValueChange(inputValue.trim());
                     setOpen(false);
+                    setInputValue("");
                   }}
                 >
-                  Create "{inputValue}"
+                  <Plus className="h-3 w-3" />
+                  <span className="truncate text-primary font-medium">Create "{inputValue}"</span>
                 </Button>
               ) : (
-                "No framework found."
+                <p className="p-4 text-center text-sm text-muted-foreground">No results found.</p>
               )}
             </CommandEmpty>
             <CommandGroup>
               {options.map((option) => (
                 <CommandItem
                   key={option.value}
-                  value={option.value}
-                  onSelect={(currentValue) => {
-                    onValueChange(currentValue === value ? "" : currentValue);
+                  onSelect={() => {
+                    onValueChange(option.value);
                     setOpen(false);
                   }}
                 >
                   <Check
                     className={cn(
                       "mr-2 h-4 w-4",
-                      value === option.value
-                        ? "opacity-100 text-primary"
-                        : "opacity-0",
+                      value === option.value ? "opacity-100" : "opacity-0"
                     )}
                   />
                   {option.label}

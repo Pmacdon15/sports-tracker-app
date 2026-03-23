@@ -1,9 +1,12 @@
 "use client";
-import { ArrowRightIcon } from "lucide-react";
-import React, { use } from "react";
+
+import { useForm } from "@tanstack/react-form";
+import { ArrowRightIcon, Loader2 } from "lucide-react";
+import { use, useMemo } from "react";
 import { toast } from "sonner";
 import type { DbResult, Equipment, Guest, UnitType } from "@/db/types";
 import { useCheckoutMutation } from "@/mutations/transactions";
+import { checkoutSchema } from "@/zod/schemas/transaction-schema";
 import { Button } from "../ui/button";
 import {
   Card,
@@ -13,8 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/card";
-import { Combobox } from "../ui/combobox";
-import { Label } from "../ui/label";
+import { FormFieldCombobox } from "../ui/form-field";
 import { TabsContent } from "../ui/tabs";
 
 export default function CheckoutTab({
@@ -35,50 +37,58 @@ export default function CheckoutTab({
   const unitTypes = equipmentType.data || [];
   const error = guestsRes.error || equipmentRes.error;
 
-  const [guestName, setGuestName] = React.useState("");
-  const [checkoutUnit, setCheckoutUnit] = React.useState("");
-  const [checkoutType, setCheckoutType] = React.useState("");
-
-  const availableEqOptions = equipment
-    .filter((e) => e.status === "AVAILABLE")
-    .map((e) => ({
-      label: `${e.unit_number} (${e.type})`,
-      value: e.unit_number,
-    }));
+  const availableEqOptions = useMemo(
+    () =>
+      equipment
+        .filter((e) => e.status === "AVAILABLE")
+        .map((e) => ({
+          label: `${e.unit_number} (${e.type})`,
+          value: e.unit_number,
+        })),
+    [equipment],
+  );
 
   const { mutate: checkout, isPending } = useCheckoutMutation();
 
-  async function handleCheckout() {
-    if (!guestName || !checkoutUnit) {
-      toast.error("Please select both a guest and a unit.");
-      return;
-    }
-    checkout(
-      {
-        guest_name: guestName,
-        unit_number: checkoutUnit,
-        type: isNewUnit ? checkoutType : undefined,
-      },
-      {
-        onSuccess: () => {
-          toast.success(`Successfully checked out unit ${checkoutUnit}`);
-          setGuestName("");
-          setCheckoutUnit("");
+  const form = useForm({
+    defaultValues: {
+      guest_name: "",
+      unit_number: "",
+      type: "",
+    },
+    onSubmit: async ({ value }) => {
+      const isNewUnit =
+        value.unit_number !== "" &&
+        !availableEqOptions.some((opt) => opt.value === value.unit_number);
+
+      // Final logic safety check
+      if (isNewUnit && !value.type) {
+        toast.error("Please select a type for the new unit.");
+        return;
+      }
+
+      checkout(
+        {
+          guest_name: value.guest_name,
+          unit_number: value.unit_number,
+          type: isNewUnit ? value.type : "",
         },
-        onError: (error: Error) => toast.error(error.message),
-      },
-    );
-  }
+        {
+          onSuccess: () => {
+            toast.success(`Successfully checked out unit ${value.unit_number}`);
+            form.reset();
+          },
+          onError: (err: Error) => toast.error(err.message),
+        },
+      );
+    },
+    validators: {
+      onSubmit: checkoutSchema,
+      onChange: checkoutSchema,
+    },
+  });
 
-  const guestOptions = guests.map((g) => ({
-    label: g.name,
-    value: g.name,
-  }));
-
-  const isNewUnit =
-    checkoutUnit !== "" &&
-    !availableEqOptions.some((opt) => opt.value === checkoutUnit);
-
+  const guestOptions = guests.map((g) => ({ label: g.name, value: g.name }));
   const unitTypeOptions = unitTypes.map((t) => ({
     label: t.name,
     value: t.name,
@@ -95,62 +105,90 @@ export default function CheckoutTab({
             Select a guest and an available unit to send out.
           </CardDescription>
         </CardHeader>
+
         {error ? (
           <CardContent className="py-12 text-center text-destructive">
             {error}
           </CardContent>
         ) : (
-          <form action={handleCheckout}>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              form.handleSubmit();
+            }}
+          >
             <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <Label>Guest Name</Label>
-                <Combobox
-                  options={guestOptions}
-                  value={guestName}
-                  onValueChange={setGuestName}
-                  placeholder="Select or Type Guest Name..."
-                  allowCustom={true}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Unit Number / Type</Label>
-                <Combobox
-                  options={availableEqOptions}
-                  value={checkoutUnit}
-                  onValueChange={setCheckoutUnit}
-                  placeholder="Select Available Unit..."
-                  allowCustom={true}
-                />
-              </div>
-
-              {isNewUnit && (
-                <div className="space-y-2 p-4 bg-primary/5 rounded-lg border border-primary/20 animate-in fade-in slide-in-from-top-2 duration-300">
-                  <Label className="text-primary font-bold">
-                    New Unit Detected - Select Type
-                  </Label>
-                  <Combobox
-                    options={unitTypeOptions || []}
-                    value={checkoutType}
-                    onValueChange={setCheckoutType}
-                    placeholder="Select or Type Unit Type..."
-                    allowCustom={true}
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    This unit will be added to your permanent inventory.
-                  </p>
-                </div>
-              )}
-            </CardContent>
-            <CardFooter>
-              <Button
-                type="submit"
+              {/* Use your original FormFieldCombobox pattern */}
+              <FormFieldCombobox
+                formApi={form}
+                name="guest_name"
+                label="Guest Name"
+                placeholder="Select or Type Guest Name..."
+                options={guestOptions}
+                allowCustom={true}
                 disabled={isPending}
-                className="w-full font-semibold text-lg py-6 shadow-md shadow-primary/20 gap-2"
+              />
+
+              <FormFieldCombobox
+                formApi={form}
+                name="unit_number"
+                label="Unit Number / Type"
+                placeholder="Select Available Unit..."
+                options={availableEqOptions}
+                allowCustom={true}
+                disabled={isPending}
+              />
+
+              <form.Subscribe selector={(state) => state.values.unit_number}>
+                {(unit_number) => {
+                  const isNewUnit =
+                    unit_number !== "" &&
+                    !availableEqOptions.some(
+                      (opt) => opt.value === unit_number,
+                    );
+
+                  if (!isNewUnit) return null;
+
+                  return (
+                    <div className="space-y-2 p-4 bg-primary/5 rounded-lg border border-primary/20 animate-in fade-in slide-in-from-top-2">
+                      <FormFieldCombobox
+                        formApi={form}
+                        name="type"
+                        label="New Unit Detected - Select Type"
+                        placeholder="Select or Type Unit Type..."
+                        options={unitTypeOptions}
+                        allowCustom={true}
+                        disabled={isPending}
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        This unit will be added to your permanent inventory.
+                      </p>
+                    </div>
+                  );
+                }}
+              </form.Subscribe>
+            </CardContent>
+
+            <CardFooter>
+              <form.Subscribe
+                selector={(state) => [state.canSubmit, state.isSubmitting]}
               >
-                <ArrowRightIcon className="w-5 h-5" />
-                Send Out
-              </Button>
+                {([canSubmit, isSubmitting]) => (
+                  <Button
+                    type="submit"
+                    disabled={!canSubmit || isPending || isSubmitting}
+                    className="w-full font-semibold text-lg py-6 shadow-md gap-2"
+                  >
+                    {isPending || isSubmitting ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <ArrowRightIcon className="w-5 h-5" />
+                    )}
+                    {isPending || isSubmitting ? "Processing..." : "Send Out"}
+                  </Button>
+                )}
+              </form.Subscribe>
             </CardFooter>
           </form>
         )}

@@ -14,6 +14,7 @@ export type ActionErrorReason =
   | "Failed to retire equipment"
   | "Failed to add unit type"
   | "Failed to update setting"
+  | "Validation failed"
   | "Test";
 
 export interface ActionError {
@@ -29,19 +30,39 @@ export function handleMutationError(error: ActionError) {
       redirect("/");
       break;
     case "Equipment not found and no type provided for creation.":
-      return { message: message || "Equipment not found and no type was provided to create a new one." };
+      return {
+        message:
+          message ||
+          "Equipment not found and no type was provided to create a new one.",
+      };
     case "Equipment not found.":
-      return { message: message || "The requested equipment could not be found." };
+      return {
+        message: message || "The requested equipment could not be found.",
+      };
     case "Equipment is not checked out.":
-      return { message: message || "This equipment is not currently checked out." };
+      return {
+        message: message || "This equipment is not currently checked out.",
+      };
     case "Failed to create or retrieve guest.":
-      return { message: message || "There was an error processing the guest information." };
+      return {
+        message:
+          message || "There was an error processing the guest information.",
+      };
     case "Over organization membership limit.":
-      return { message: message || "Your organization has reached its membership limit." };
+      return {
+        message:
+          message || "Your organization has reached its membership limit.",
+      };
     case "Equipment is not available":
-      return { message: message || "This equipment is already checked out or otherwise unavailable." };
+      return {
+        message:
+          message ||
+          "This equipment is already checked out or otherwise unavailable.",
+      };
     case "Failed to add equipment":
-      return { message: message || "Could not add the new equipment to the system." };
+      return {
+        message: message || "Could not add the new equipment to the system.",
+      };
     case "Failed to delete equipment":
       return { message: message || "Failed to delete the equipment." };
     case "Failed to retire equipment":
@@ -51,7 +72,14 @@ export function handleMutationError(error: ActionError) {
     case "Failed to update setting":
       return { message: message || "Failed to update the setting." };
     case "Unknown error.":
-      return { message: message || "An unexpected error occurred. Please try again." };
+      return {
+        message: message || "An unexpected error occurred. Please try again.",
+      };
+    case "Validation failed": {
+      return {
+        message: message || "Form validation failed",
+      };
+    }
     case "Test":
       return { message: message || "This is a test error message." };
     default:

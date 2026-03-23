@@ -1,5 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { errAsync, okAsync } from "neverthrow";
+import { connection } from "next/server";
+import z from "zod";
 import {
   addEquipmentDb,
   getAllEquipmentDb,
@@ -8,7 +10,10 @@ import {
 } from "@/db/equipment";
 import type { DbResult, Equipment } from "@/db/types";
 import { addUnitTypeDb } from "@/db/unit_types";
-import { connection } from "next/server";
+import {
+  createInventorySchema,
+  deleteEquipmentSchema,
+} from "@/zod/schemas/equipment-schema";
 
 export async function getAllEquipment(): Promise<DbResult<Equipment[]>> {
   await connection();
@@ -47,7 +52,20 @@ export async function addEquipment(type: string, unit_number: string) {
   try {
     const { orgId } = await auth.protect();
     if (!orgId) return errAsync({ reason: "Unauthorized" } as const);
+    const validatedFields = createInventorySchema.safeParse({
+      unit_number,
+      type,
+    });
 
+    if (!validatedFields.success) {
+      // If your version of Zod supports it:
+      const errorTree = z.treeifyError(validatedFields.error);
+
+      return errAsync({
+        reason: "Validation failed",
+        errors: errorTree,
+      } as const);
+    }
     const data = await addEquipmentDb(orgId, type, unit_number);
     await addUnitTypeDb(orgId, type);
     return okAsync(data);
@@ -69,8 +87,22 @@ export async function deleteEquipment(unit_number: string) {
   try {
     const { orgId, has } = await auth.protect();
     const isAdmin = has({ role: "org:admin" });
-    if (!orgId || !isAdmin) return errAsync({ reason: "Unauthorized" } as const);
+    if (!orgId || !isAdmin)
+      return errAsync({ reason: "Unauthorized" } as const);
 
+    const validatedFields = deleteEquipmentSchema.safeParse({
+      unit_number,
+    });
+
+    if (!validatedFields.success) {
+      // If your version of Zod supports it:
+      const errorTree = z.treeifyError(validatedFields.error);
+
+      return errAsync({
+        reason: "Validation failed",
+        errors: errorTree,
+      } as const);
+    }
     const data = await updateEquipmentStatusDb(orgId, unit_number, "DELETED");
     return okAsync(data);
   } catch (e: unknown) {
@@ -83,8 +115,22 @@ export async function retireEquipment(unit_number: string) {
   try {
     const { orgId, has } = await auth.protect();
     const isAdmin = has({ role: "org:admin" });
-    if (!orgId || !isAdmin) return errAsync({ reason: "Unauthorized" } as const);
+    if (!orgId || !isAdmin)
+      return errAsync({ reason: "Unauthorized" } as const);
 
+    const validatedFields = deleteEquipmentSchema.safeParse({
+      unit_number,
+    });
+
+    if (!validatedFields.success) {
+      // If your version of Zod supports it:
+      const errorTree = z.treeifyError(validatedFields.error);
+
+      return errAsync({
+        reason: "Validation failed",
+        errors: errorTree,
+      } as const);
+    }
     const data = await updateEquipmentStatusDb(orgId, unit_number, "RETIRED");
     return okAsync(data);
   } catch (e: unknown) {

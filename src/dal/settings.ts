@@ -1,7 +1,8 @@
 import { auth } from "@clerk/nextjs/server";
+import { connection } from "next/server";
 import { getSettingsDb, updateSettingDb } from "@/db/settings";
 import type { DbResult, Setting } from "@/db/types";
-import { connection } from "next/server";
+import { settingsSchema } from "@/zod/schemas/settings-schema";
 
 export async function getSettings(): Promise<DbResult<Record<string, string>>> {
   await connection();
@@ -31,12 +32,26 @@ export async function updateSetting(
   try {
     const { orgId, has } = await auth.protect();
     if (!orgId) throw new Error("Organization selection is required.");
-    if (!has({ role: "org:admin" })) throw new Error("not Admin");
+    if (!has({ role: "org:admin" })) throw new Error("Not an Admin");
+
+    const schemaKey = key as keyof typeof settingsSchema.shape;
+    const validator = settingsSchema.pick({ [schemaKey]: true } as any);
+
+    const validatedFields = validator.safeParse({ [key]: value });
+
+    if (!validatedFields.success) {
+      const errorMessage =
+        validatedFields.error.issues[0]?.message || "Invalid input";
+      return { data: null, error: `${key}: ${errorMessage}` };
+    }
 
     const data = await updateSettingDb(orgId, key, value);
-    return { data: data, error: null };
+    return { data, error: null };
   } catch (e: unknown) {
     console.error(`Error updating setting ${key}:`, e);
-    return { data: null, error: "Failed to update setting" };
+    return {
+      data: null,
+      error: e instanceof Error ? e.message : "Failed to update",
+    };
   }
 }
