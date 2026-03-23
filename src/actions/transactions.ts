@@ -2,9 +2,7 @@
 
 import { okAsync } from "neverthrow";
 import { updateTag } from "next/cache";
-import { redirect } from "next/navigation";
 import { checkoutEquipment, returnEquipment } from "@/dal/transactions";
-import type { DbResult, Transaction } from "@/db/types";
 import { handleMutationError } from "./utils";
 
 export async function checkoutEquipmentAction(
@@ -14,19 +12,14 @@ export async function checkoutEquipmentAction(
 ) {
   const res = await checkoutEquipment(unit_number, guest_name, type);
 
-  return res.match(
-    (checkedOut) => {
-      updateTag(`active-rentals-${checkedOut.org_id}`);
-      updateTag(`equipment-${checkedOut.org_id}`);
-      updateTag(`unit-types-${checkedOut.org_id}`);
-      updateTag(`guest-global-stats-${checkedOut.org_id}`);
-      updateTag(
-        `guest-transactions-${checkedOut.org_id}-${checkedOut.guest_id}`,
-      );
-      return okAsync(checkedOut);
-    },
-    handleMutationError,
-  );
+  return res.match((checkedOut) => {
+    updateTag(`active-rentals-${checkedOut.org_id}`);
+    updateTag(`equipment-${checkedOut.org_id}`);
+    updateTag(`unit-types-${checkedOut.org_id}`);
+    updateTag(`guest-global-stats-${checkedOut.org_id}`);
+    updateTag(`guest-transactions-${checkedOut.org_id}-${checkedOut.guest_id}`);
+    return okAsync(checkedOut);
+  }, handleMutationError);
 }
 
 export async function returnEquipmentAction(
@@ -41,7 +34,9 @@ export async function returnEquipmentAction(
     updateTag(`completed-rentals-${transaction.org_id}-${date}-${timezone}`);
     updateTag(`equipment-${transaction.org_id}`);
     updateTag(`guest-global-stats-${transaction.org_id}`);
-    updateTag(`guest-transactions-${transaction.org_id}-${transaction.guest_id}`);
+    updateTag(
+      `guest-transactions-${transaction.org_id}-${transaction.guest_id}`,
+    );
     return okAsync(transaction);
   }, handleMutationError);
 }

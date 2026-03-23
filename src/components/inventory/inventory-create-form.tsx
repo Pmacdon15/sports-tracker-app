@@ -12,9 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Combobox } from "@/components/ui/combobox";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormFieldCombobox, FormFieldInput } from "@/components/ui/form-field";
 import type { DbResult, UnitType } from "@/db/types";
 import { useAddEquipmentMutation } from "@/mutations/equipment";
 import { createInventorySchema } from "@/zod/schemas/equipment-schema";
@@ -59,7 +57,6 @@ export function InventoryCreateForm({
     },
     validators: {
       onSubmit: createInventorySchema,
-      // onBlur: createInventorySchema,
       onChange: createInventorySchema,
     },
   });
@@ -80,68 +77,25 @@ export function InventoryCreateForm({
           }}
         >
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label>Unit Number (ID)</Label>
-              <form.Field
-                name="unit_number"
-                validators={{
-                  onChange: createInventorySchema.shape.unit_number,
-                }}
-              >
-                {(field) => {
-                  const { errors, isTouched } = field.state.meta;
-                  return (
-                    <>
-                      <Input
-                        name={field.name}
-                        value={field.state.value}
-                        placeholder="e.g. R-402"
-                        onBlur={field.handleBlur}
-                        onChange={(e) => field.handleChange(e.target.value)}
-                        disabled={isPending}
-                      />
-                      {errors.length > 0 && isTouched && (
-                        <span className="text-xs text-red-500">
-                          {errors[0]?.message}
-                        </span>
-                      )}
-                    </>
-                  );
-                }}
-              </form.Field>
-            </div>
+            <FormFieldInput
+              formApi={form}
+              name="unit_number"
+              label="Unit Number (ID)"
+              validator={createInventorySchema.shape.unit_number}
+              placeholder="e.g. R-402"
+              disabled={isPending}
+            />
 
-            <div className="space-y-2">
-              <Label>Type</Label>
-              <form.Field
-                name="type"
-                validators={{
-                  onChange: createInventorySchema.shape.type,
-                }}
-              >
-                {(field) => {
-                  const { errors, isTouched } = field.state.meta;
-                  return (
-                    <>
-                      <Combobox
-                        onBlur={field.handleBlur}
-                        options={unitTypeOptions}
-                        value={field.state.value}
-                        onValueChange={(val) => field.handleChange(val)}
-                        placeholder="Select or Type Type"
-                        allowCustom={true}
-                        disabled={isPending}
-                      />
-                      {errors.length > 0 && isTouched && (
-                        <span className="text-xs text-red-500">
-                          {errors[0]?.message}
-                        </span>
-                      )}
-                    </>
-                  );
-                }}
-              </form.Field>
-            </div>
+            <FormFieldCombobox
+              formApi={form}
+              name="type"
+              label="Type"
+              validator={createInventorySchema.shape.type}
+              options={unitTypeOptions}
+              placeholder="Select or Type Type"
+              allowCustom={true}
+              disabled={isPending}
+            />
           </CardContent>
           <CardFooter>
             <Button

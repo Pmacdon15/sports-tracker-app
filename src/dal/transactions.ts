@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { errAsync, okAsync } from "neverthrow";
 import { connection } from "next/server";
+import z from "zod";
 import { isOverMemberShipLimit } from "@/db/auth";
 import { addEquipmentDb, getEquipmentByUnitDb } from "@/db/equipment";
 import { createGuestDb, getGuestByNameDb } from "@/db/guests";
@@ -13,6 +14,7 @@ import {
 } from "@/db/transactions";
 import type { DbResult, Transaction } from "@/db/types";
 import { addUnitTypeDb } from "@/db/unit_types";
+import { checkoutSchema, returnSchema } from "@/zod/schemas/transaction-schema";
 export async function getActiveRentals(): Promise<DbResult<Transaction[]>> {
   await connection();
   try {
@@ -69,6 +71,22 @@ export async function checkoutEquipment(
   guest_name: string,
   type?: string,
 ) {
+  const validatedFields = checkoutSchema.safeParse({
+    unit_number,
+    guest_name,
+    type,
+  });
+
+  if (!validatedFields.success) {
+    // If your version of Zod supports it:
+    const errorTree = z.treeifyError(validatedFields.error);
+
+    return errAsync({
+      reason: "Validation failed",
+      errors: errorTree,
+    } as const);
+  }
+
   const { orgId, userId } = await auth.protect();
   if (!orgId) return errAsync({ reason: "Unauthorized" } as const);
   try {
@@ -124,9 +142,23 @@ export async function returnEquipment(unit_number: string) {
     const { orgId, userId } = await auth.protect();
     if (!orgId) return errAsync({ reason: "Unauthorized" } as const);
 
+    const validatedFields = returnSchema.safeParse({
+      unit_number,
+    });
+
+    if (!validatedFields.success) {
+      // If your version of Zod supports it:
+      const errorTree = z.treeifyError(validatedFields.error);
+
+      return errAsync({
+        reason: "Validation failed",
+        errors: errorTree,
+      } as const);
+    }
     const equipment = await getEquipmentByUnitDb(orgId, unit_number);
 
-    if (!equipment) return errAsync({ reason: "Equipment not found." } as const);
+    if (!equipment)
+      return errAsync({ reason: "Equipment not found." } as const);
     if (
       equipment.status !== "CHECKED_OUT" &&
       equipment.status !== "DELETED" &&

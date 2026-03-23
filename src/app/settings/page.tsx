@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import SettingsFallback from "@/components/fallbacks/settings-fallback";
 import { getSettings } from "@/dal/settings";
-import { SettingsForm } from "./client";
+import { SettingsForm } from "./settings-form";
 
 export default function SettingsPage() {
   const settingsPromise = getSettings();
