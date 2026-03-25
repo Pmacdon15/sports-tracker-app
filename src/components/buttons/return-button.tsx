@@ -16,8 +16,9 @@ export default function ReturnButton({
   async function handleReturn(unit_number: string) {
     startTransition(async () => {
       onReturn(unit_number);
+      returnItem(unit_number);
     });
-    returnItem(unit_number);
+   
   }
   return (
     <Button

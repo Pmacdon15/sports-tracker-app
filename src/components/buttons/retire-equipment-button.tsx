@@ -20,8 +20,9 @@ export function InventoryRetireButton({
   async function handleRetire(unit_number: string) {
     startTransition(async () => {
       onRetire();
+      retireEq(unit_number);
     });
-    retireEq(unit_number);
+
   }
 
   if (!isAdmin) return null;
