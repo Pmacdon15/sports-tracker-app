@@ -22,6 +22,7 @@ export function InventoryRetireButton({
       onRetire();
       retireEq(unit_number);
     });
+
   }
 
   if (!isAdmin) return null;

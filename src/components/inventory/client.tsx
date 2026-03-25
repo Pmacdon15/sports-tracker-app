@@ -1,6 +1,7 @@
 "use client";
+
 import { Search, SlidersHorizontal } from "lucide-react";
-import { useMemo, useState, ViewTransition } from "react";
+import { use, useMemo, useOptimistic, useState, ViewTransition } from "react";
 import { AlertDialogDestructive } from "@/components/dialogs/delete-inventory";
 import { AlertDialogRetire } from "@/components/dialogs/retire-inventory";
 import { Button } from "@/components/ui/button";
@@ -13,22 +14,48 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Equipment } from "@/db/types";
+import type { DbResult, Equipment } from "@/db/types";
 import { InventoryDeleteButton } from "../buttons/delete-equipment-button";
 import { InventoryRetireButton } from "../buttons/retire-equipment-button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
+type OptimisticAction = {
+  unit_number: string;
+  type: "DELETE" | "RETIRE";
+};
+
 export function EquipmentList({
-  initialEquipment,
+  equipmentPromise,
 }: {
-  initialEquipment: Equipment[];
+  equipmentPromise: Promise<DbResult<Equipment[]>>;
 }) {
+  const equipmentRes = use(equipmentPromise);
+  const initialData = equipmentRes.data || [];
+  const error = equipmentRes.error;
+
+  const [optimisticEquipment, setOptimistic] = useOptimistic(
+    initialData,
+    (state: Equipment[], action: OptimisticAction) => {
+      if (action.type === "DELETE") {
+        return state.filter((eq) => eq.unit_number !== action.unit_number);
+      }
+      if (action.type === "RETIRE") {
+        return state.map((eq) =>
+          eq.unit_number === action.unit_number
+            ? { ...eq, status: "RETIRED" }
+            : eq
+        );
+      }
+      return state;
+    }
+  );
+
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
 
   const filteredEquipment = useMemo(() => {
-    return initialEquipment.filter((eq) => {
+    return optimisticEquipment.filter((eq) => {
       const matchesSearch = eq.unit_number
         .toLowerCase()
         .includes(search.toLowerCase());
@@ -37,12 +64,12 @@ export function EquipmentList({
         statusFilter === "all" || eq.status === statusFilter;
       return matchesSearch && matchesType && matchesStatus;
     });
-  }, [initialEquipment, search, typeFilter, statusFilter]);
+  }, [optimisticEquipment, search, typeFilter, statusFilter]);
 
   const unitTypes = useMemo(() => {
-    const types = new Set(initialEquipment.map((eq) => eq.type));
+    const types = new Set(optimisticEquipment.map((eq) => eq.type));
     return Array.from(types).sort();
-  }, [initialEquipment]);
+  }, [optimisticEquipment]);
 
   const statuses = ["AVAILABLE", "CHECKED_OUT", "RETIRED"];
 
@@ -60,6 +87,22 @@ export function EquipmentList({
         return "bg-muted text-muted-foreground border-transparent";
     }
   };
+
+  if (error) {
+    return (
+      <CardContent className="py-12 text-center text-destructive">
+        {error}
+      </CardContent>
+    );
+  }
+
+  if (initialData.length === 0) {
+    return (
+      <CardContent className="py-12 text-center text-muted-foreground">
+        Please add Equipment
+      </CardContent>
+    );
+  }
 
   return (
     <CardContent className="space-y-6">
@@ -135,7 +178,10 @@ export function EquipmentList({
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <AlertDialogRetire>
-                        <InventoryRetireButton unit_number={eq.unit_number} />
+                        <InventoryRetireButton 
+                          unit_number={eq.unit_number} 
+                          onRetire={() => setOptimistic({ unit_number: eq.unit_number, type: "RETIRE" })}
+                        />
                       </AlertDialogRetire>
                     </TooltipTrigger>
                     <TooltipContent>
@@ -146,7 +192,10 @@ export function EquipmentList({
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <AlertDialogDestructive>
-                      <InventoryDeleteButton unit_number={eq.unit_number} />
+                      <InventoryDeleteButton 
+                        unit_number={eq.unit_number} 
+                        onDelete={() => setOptimistic({ unit_number: eq.unit_number, type: "DELETE" })}
+                      />
                     </AlertDialogDestructive>
                   </TooltipTrigger>
                   <TooltipContent>
@@ -165,25 +214,18 @@ export function EquipmentList({
             <p className="text-xl font-semibold text-foreground/90">
               No matching units
             </p>
-            <p className="text-sm text-muted-foreground mt-2 max-w-62.5 mx-auto">
-              {search || typeFilter !== "all" || statusFilter !== "all"
-                ? "We couldn't find anything matching your current filters."
-                : "Your warehouse is empty. Use the form on the left to add equipment."}
-            </p>
-            {(search || typeFilter !== "all" || statusFilter !== "all") && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setSearch("");
-                  setTypeFilter("all");
-                  setStatusFilter("all");
-                }}
-                className="mt-6 rounded-full px-6"
-              >
-                Reset all filters
-              </Button>
-            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setSearch("");
+                setTypeFilter("all");
+                setStatusFilter("all");
+              }}
+              className="mt-6 rounded-full px-6"
+            >
+              Reset all filters
+            </Button>
           </div>
         )}
       </div>
@@ -194,14 +236,9 @@ export function EquipmentList({
             {filteredEquipment.length}
           </span>
           <span className="text-sm text-muted-foreground">
-            of {initialEquipment.length} units listed
+            of {initialData.length} units listed
           </span>
         </div>
-        {filteredEquipment.length > 0 && (
-          <p className="text-[11px] text-muted-foreground/70 italic">
-            Tip: Use search to quickly find a specific ID
-          </p>
-        )}
       </div>
     </CardContent>
   );

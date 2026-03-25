@@ -167,8 +167,7 @@ export async function returnEquipment(unit_number: string) {
       return errAsync({ reason: "Equipment is not checked out." } as const);
     }
 
-    const data = await returnEquipmentDb(orgId, equipment.id, userId);
-    return okAsync(data);
+    return okAsync(await returnEquipmentDb(orgId, equipment.id, userId));
   } catch (e: unknown) {
     console.error("Error returning equipment:", e);
     return errAsync({ reason: "Unknown error." } as const);

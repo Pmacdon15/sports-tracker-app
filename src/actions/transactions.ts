@@ -1,6 +1,5 @@
 "use server";
 
-import { okAsync } from "neverthrow";
 import { updateTag } from "next/cache";
 import { checkoutEquipment, returnEquipment } from "@/dal/transactions";
 import { handleMutationError } from "./utils";
@@ -18,7 +17,7 @@ export async function checkoutEquipmentAction(
     updateTag(`unit-types-${checkedOut.org_id}`);
     updateTag(`guest-global-stats-${checkedOut.org_id}`);
     updateTag(`guest-transactions-${checkedOut.org_id}-${checkedOut.guest_id}`);
-    return okAsync(checkedOut);
+    return { value: checkedOut };
   }, handleMutationError);
 }
 
@@ -37,6 +36,6 @@ export async function returnEquipmentAction(
     updateTag(
       `guest-transactions-${transaction.org_id}-${transaction.guest_id}`,
     );
-    return okAsync(transaction);
+    return { value: transaction };
   }, handleMutationError);
 }

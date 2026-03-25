@@ -19,7 +19,8 @@ export function InventoryDeleteButton({
     startTransition(async () => {
       onDelete();
       deleteEq(unit_number);
-    });
+    });   
+
   }
   if (!isAdmin) return null;
   return (

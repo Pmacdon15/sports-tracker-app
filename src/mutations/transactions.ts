@@ -1,11 +1,11 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
 import {
   checkoutEquipmentAction,
   returnEquipmentAction,
 } from "@/actions/transactions";
-import type { CheckoutInput } from "@/zod/schemas/transaction-schema";
 
 export function useCheckoutMutation() {
   return useMutation({
@@ -13,37 +13,55 @@ export function useCheckoutMutation() {
       unit_number,
       guest_name,
       type,
-    }: CheckoutInput) => {
+    }: {
+      unit_number: string;
+      guest_name: string;
+      type?: string;
+    }) => {
       const res = await checkoutEquipmentAction(unit_number, guest_name, type);
 
       if (res && "message" in res) {
         throw new Error(res.message);
       }
 
+      if (res && "value" in res) {
+        return res.value;
+      }
+
       return res;
     },
     onSuccess: (data) => {
-      console.log("Success!", data);
+      const unit = data.equipment_unit || (data as any).unit_number;
+      toast.success(`Successfully checked out unit ${unit}`);
     },
     onError: (error) => {
+      // error.message will be your custom reason (e.g., "Equipment is not available")
       console.error("Mutation failed:", error.message);
     },
   });
 }
 
 export function useReturnMutation() {
-  // const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (unit_number: string) => {
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       const res = await returnEquipmentAction(unit_number, timezone);
+
       if (res && "message" in res) {
         throw new Error(res.message);
       }
 
+      if (res && "value" in res) {
+        return res.value;
+      }
+
       return res;
     },
-    onSuccess: () => {      
+    onSuccess: (data) => {
+      // Use equipment_unit if unit_number doesn't exist on Transaction
+      const unit = data.equipment_unit || (data as any).unit_number;
+      toast.success(`Successfully returned unit ${unit}`);
     },
+    onError: (error: Error) => toast.error(error.message),
   });
 }

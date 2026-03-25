@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import EquipmentListFallback from "@/components/fallbacks/equipment-list-fallback";
 import InventoryCreateFormFallback from "@/components/fallbacks/inventory-create-form-fallback";
 import InventoryTotalHeaderFallback from "@/components/fallbacks/inventroy-total-header-fallback";
-import EquipmentContent from "@/components/inventory/equipment-content";
+import { EquipmentList } from "@/components/inventory/client";
 import { InventoryCreateForm } from "@/components/inventory/inventory-create-form";
 import InventoryTotalHeader from "@/components/inventory/inventory-total-header";
 import { Card, CardHeader } from "@/components/ui/card";
@@ -44,7 +44,7 @@ export default function InventoryPage() {
               </Suspense>
             </CardHeader>
             <Suspense fallback={<EquipmentListFallback />}>
-              <EquipmentContent equipmentPromise={equipmentPromise} />
+              <EquipmentList equipmentPromise={equipmentPromise} />
             </Suspense>
           </Card>
         </div>
