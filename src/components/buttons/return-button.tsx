@@ -12,10 +12,16 @@ export default function ReturnButton({
   const { mutate: returnItem, isPending } = useReturnMutation();
 
   async function handleReturn(unit_number: string) {
+<<<<<<< Updated upstream
     returnItem(unit_number, {
       onSuccess: () =>
         toast.success(`Successfully returned unit ${unit_number}`),
       onError: (error: Error) => toast.error(error.message),
+=======
+    startTransition(async () => {
+      onReturn(unit_number);
+      returnItem(unit_number);
+>>>>>>> Stashed changes
     });
   }
   return (

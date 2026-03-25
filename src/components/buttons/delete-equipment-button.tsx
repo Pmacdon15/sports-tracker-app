@@ -13,6 +13,15 @@ export function InventoryDeleteButton({
 
   const { mutate: deleteEq, isPending } = useDeleteEquipmentMutation();
 
+<<<<<<< Updated upstream
+=======
+  function handleDelete(unit_number: string) {
+    startTransition(async () => {
+      onDelete();
+      deleteEq(unit_number);
+    });
+  }
+>>>>>>> Stashed changes
   if (!isAdmin) return null;
   return (
     <Button

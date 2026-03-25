@@ -15,6 +15,16 @@ export function InventoryRetireButton({
 
   const { mutate: retireEq, isPending } = useRetireEquipmentMutation();
 
+<<<<<<< Updated upstream
+=======
+  async function handleRetire(unit_number: string) {
+    startTransition(async () => {
+      onRetire();
+      retireEq(unit_number);
+    });
+  }
+
+>>>>>>> Stashed changes
   if (!isAdmin) return null;
   return (
     <Button
