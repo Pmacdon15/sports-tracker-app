@@ -75,7 +75,7 @@ export default function GuestStatsContent() {
       </div>
 
       {/* Table Container */}
-      <div className="flex-1 min-h-[400px] max-h-[600px] overflow-y-auto custom-scrollbar relative">
+      <div className="flex-1 min-h-100 max-h-150 overflow-y-auto custom-scrollbar relative">
         {status === "error" ? (
           <div className="py-12 text-center text-destructive">
             Error:{" "}
