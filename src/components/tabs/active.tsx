@@ -1,5 +1,5 @@
 "use client";
-import { Suspense, use, useOptimistic, ViewTransition } from "react";
+import { Suspense, use, useOptimistic } from "react";
 import type { DbResult, Transaction } from "@/db/types";
 import ReturnButton from "../buttons/return-button";
 import ActiveDuration from "../ui/active-duration";
@@ -58,32 +58,35 @@ export default function ActiveTab({
           ) : (
             <div className="grid gap-4">
               {activeRentals.map((rental) => (
-                <ViewTransition key={rental.id}>
-                  <div className="flex items-center justify-between p-4 border rounded-lg bg-card shadow-sm">
-                    <div className="flex flex-col gap-1">
-                      <span className="font-bold text-lg">
-                        {rental.guest_name}
-                      </span>
-                      <span className="text-sm text-muted-foreground">
-                        Unit:{" "}
-                        <span className="text-foreground font-medium">
-                          {rental.equipment_unit}
-                        </span>{" "}
-                        ({rental.equipment_type})
-                      </span>
-                      <Suspense>
-                        <ActiveDuration
-                          checkedOutAt={rental.checked_out_at}
-                          settingsPromise={settingsPromise}
-                        />
-                      </Suspense>
-                    </div>
-                    <ReturnButton
-                      equipment_unit={rental.equipment_unit}
-                      onReturn={() => setOptimistic(rental.equipment_unit)}
-                    />
+                // <ViewTransition >
+                <div
+                  key={rental.id}
+                  className="flex items-center justify-between p-4 border rounded-lg bg-card shadow-sm"
+                >
+                  <div className="flex flex-col gap-1">
+                    <span className="font-bold text-lg">
+                      {rental.guest_name}
+                    </span>
+                    <span className="text-sm text-muted-foreground">
+                      Unit:{" "}
+                      <span className="text-foreground font-medium">
+                        {rental.equipment_unit}
+                      </span>{" "}
+                      ({rental.equipment_type})
+                    </span>
+                    <Suspense>
+                      <ActiveDuration
+                        checkedOutAt={rental.checked_out_at}
+                        settingsPromise={settingsPromise}
+                      />
+                    </Suspense>
                   </div>
-                </ViewTransition>
+                  <ReturnButton
+                    equipment_unit={rental.equipment_unit}
+                    onReturn={() => setOptimistic(rental.equipment_unit)}
+                  />
+                </div>
+                // </ViewTransition>
               ))}
             </div>
           )}
