@@ -32,10 +32,10 @@ export async function POST(req: NextRequest) {
 
         console.log("Extracted IDs:", { userId, orgId });
 
-        if (userId) {
+        if (userId || orgId) {
           await handleSubscriptionUpdate(userId, orgId);
         } else {
-          console.error("No userId found in subscriptionItem.active event data");
+          console.error("No userId or orgId found in subscriptionItem.active event data");
         }
         break;
       }
