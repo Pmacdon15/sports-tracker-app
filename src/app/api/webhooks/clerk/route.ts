@@ -4,22 +4,38 @@ import {
   handleOrganizationCreated,
   handleSubscriptionUpdate,
 } from "@/dal/webhooks";
+
 export async function POST(req: NextRequest) {
+  console.log("Webhook POST received");
+  
+  let evt: WebhookEvent;
   try {
-    const evt = (await verifyWebhook(req, {
+    evt = (await verifyWebhook(req, {
       signingSecret: process.env.CLERK_WEBHOOK_SIGNING_SECRET as string,
     })) as WebhookEvent;
+  } catch (err) {
+    console.error("Webhook verification failed:", err);
+    return new Response("Webhook verification failed", { status: 400 });
+  }
 
+  console.log("Webhook verified, type:", evt.type);
+
+  try {
     switch (evt.type) {
       case "subscriptionItem.active": {
-        const data = evt.data;
+        const data = evt.data as any;
+        console.log("Subscription data:", JSON.stringify(data, null, 2));
 
-        const plan = data.plan?.slug;
-        const orgId = data.payer?.organization_id;
-        const userId = data.payer?.user_id;
+        // Attempt to find userId and orgId in multiple places
+        const userId = data.payer?.user_id || data.user_id || data.customer_id;
+        const orgId = data.payer?.organization_id || data.organization_id;
 
-        if (plan && orgId) {
+        console.log("Extracted IDs:", { userId, orgId });
+
+        if (userId) {
           await handleSubscriptionUpdate(userId, orgId);
+        } else {
+          console.error("No userId found in subscriptionItem.active event data");
         }
         break;
       }
@@ -29,11 +45,13 @@ export async function POST(req: NextRequest) {
         await handleOrganizationCreated(orgId, orgName);
         break;
       }
+      default:
+        console.log("Unhandled event type:", evt.type);
     }
 
     return new Response("Success", { status: 200 });
   } catch (err) {
-    console.error("Webhook Error:", err);
-    return new Response("Server Error", { status: 500 });
+    console.error("Error processing webhook:", err);
+    return new Response("Error processing webhook", { status: 500 });
   }
 }
