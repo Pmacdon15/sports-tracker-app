@@ -16,7 +16,7 @@ export async function handleSubscriptionUpdate(
       subscription.subscriptionItems.flatMap((plan: any) => plan.features) || [];
 
     let maxOrgs = 1;
-    if (features.includes("2_organization")) maxOrgs = 2;
+    if (features.includes("2_organizations")) maxOrgs = 2;
     // if (features.includes("4_organization")) maxOrgs = 4;
 
     await clerk.users.updateUserMetadata(userId, {
