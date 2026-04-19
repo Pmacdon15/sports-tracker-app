@@ -26,16 +26,16 @@ export async function POST(req: NextRequest) {
         const data = evt.data as any;
         console.log("Subscription data:", JSON.stringify(data, null, 2));
 
-        // Attempt to find userId and orgId in multiple places
+      
         const userId = data.payer?.user_id || data.user_id || data.customer_id;
         const orgId = data.payer?.organization_id || data.organization_id;
+        
+        console.log("Extracted identifiers:", { userId, orgId});
 
-        console.log("Extracted IDs:", { userId, orgId });
-
-        if (userId || orgId) {
+        if (userId || orgId ) {
           await handleSubscriptionUpdate(userId, orgId);
         } else {
-          console.error("No userId or orgId found in subscriptionItem.active event data");
+          console.error("No userId, orgId, or email found in subscriptionItem.active event data");
         }
         break;
       }

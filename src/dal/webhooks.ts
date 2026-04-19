@@ -1,20 +1,21 @@
 import { clerkClient } from "@clerk/nextjs/server";
-import {
-  insertOrganizationDb,
-  updateOrganizationEquipmentLimitDb,
-} from "@/db/organizations";
+import { insertOrganizationDb } from "@/db/organizations";
 
 export async function handleSubscriptionUpdate(
   userId: string | undefined,
-  orgId: string | undefined,
+  orgId: string | undefined, 
 ) {
-  console.log("handleSubscriptionUpdate called with:", { userId, orgId });
-  if (!userId && !orgId) {
-    console.log("No userId or orgId provided, returning early");
-    return;
-  }
+  console.log("handleSubscriptionUpdate called with:", {
+    userId,
+    orgId,   
+  });
 
   const clerk = await clerkClient();
+
+  if (!userId) {
+    console.error("Could not determine target user ID for subscription update");
+    return;
+  }
 
   try {
     let subscription: any;
@@ -22,20 +23,19 @@ export async function handleSubscriptionUpdate(
       console.log("Fetching subscription for org:", orgId);
       subscription =
         await clerk.billing.getOrganizationBillingSubscription(orgId);
-    } else if (userId) {
+    } else {
       console.log("No orgId, fetching subscription for user:", userId);
-      subscription = await clerk.billing.getUserBillingSubscription(userId);
+      subscription =
+        await clerk.billing.getUserBillingSubscription(userId);
     }
 
     console.log("Subscription fetched:", JSON.stringify(subscription, null, 2));
 
     if (!subscription) {
       console.log("No subscription found");
-      if (userId) {
-        await clerk.users.updateUserMetadata(userId, {
-          publicMetadata: { maxOrgs: 1 },
-        });
-      }
+      await clerk.users.updateUserMetadata(userId, {
+        publicMetadata: { maxOrgs: 1 },
+      });
       return;
     }
 
@@ -47,45 +47,26 @@ export async function handleSubscriptionUpdate(
       }) || [];
 
     console.log("Extracted features:", features);
+    let maxOrgs = 1;
+    if (features.includes("2_organizations")) maxOrgs = 2;
 
-    // Update Organization Equipment Limit if orgId is present
-    if (orgId) {
-      let equipmentLimit = 10;
-      if (features.includes("200_inventory_items")) equipmentLimit = 200;
-      else if (features.includes("50_inventory_items")) equipmentLimit = 50;
-
-      console.log(
-        `Updating org ${orgId} equipment limit in DB to ${equipmentLimit}`,
-      );
-      await updateOrganizationEquipmentLimitDb(orgId, equipmentLimit);
-    }
-
-    // Update User Metadata if userId is present
-    if (userId) {
-      let maxOrgs = 1;
-      if (features.includes("2_organizations")) maxOrgs = 2;
-      // if (features.includes("4_organization")) maxOrgs = 4;
-
-      console.log(
-        "Updating user metadata for",
-        userId,
-        "with maxOrgs:",
+    console.log(
+      "Updating user metadata for",
+      targetUserId,
+      "with maxOrgs:",
+      maxOrgs,
+    );
+    await clerk.users.updateUserMetadata(targetUserId, {
+      publicMetadata: {
         maxOrgs,
-      );
-      await clerk.users.updateUserMetadata(userId, {
-        publicMetadata: {
-          maxOrgs,
-        },
-      });
-      console.log("User metadata updated successfully");
-    }
+      },
+    });
+    console.log("User metadata updated successfully");
   } catch (error) {
-    console.error("Error updating subscription details: ", error);
-    if (userId) {
-      await clerk.users.updateUserMetadata(userId, {
-        publicMetadata: { maxOrgs: 1 },
-      });
-    }
+    console.error("Error updating user maxOrgs: ", error);
+    await clerk.users.updateUserMetadata(targetUserId, {
+      publicMetadata: { maxOrgs: 1 },
+    });
   }
 }
 
