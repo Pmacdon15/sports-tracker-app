@@ -13,8 +13,10 @@ export async function handleSubscriptionUpdate(
     const subscription =
       await clerk.billing.getOrganizationBillingSubscription(orgId);
     const features =
-      subscription.subscriptionItems.flatMap((plan: any) => plan.features) || [];
+      subscription.subscriptionItems.flatMap((plan: any) => plan.features) ||
+      [];
 
+    console.log("features: " + JSON.stringify(features, null, 2));
     let maxOrgs = 1;
     if (features.includes("2_organizations")) maxOrgs = 2;
     // if (features.includes("4_organization")) maxOrgs = 4;
