@@ -50,12 +50,18 @@ export async function getEquipmentByUnit(
 
 export async function addEquipment(type: string, unit_number: string) {
   try {
-    const { orgId } = await auth.protect();
+    const { orgId, has } = await auth.protect();
     if (!orgId) return errAsync({ reason: "Unauthorized" } as const);
     const validatedFields = createInventorySchema.safeParse({
       unit_number,
       type,
     });
+
+    let equipmentLimit= 10
+    const limitIs50 = has({ feature: "50_inventory_items" });
+     const limitIs200 = has({ feature: "200_inventory_items" });
+    if (limitIs50) equipmentLimit = 50;
+    else if(limitIs200) equipmentLimit = 200    
 
     if (!validatedFields.success) {
       // If your version of Zod supports it:
@@ -66,9 +72,19 @@ export async function addEquipment(type: string, unit_number: string) {
         errors: errorTree,
       } as const);
     }
-    const data = await addEquipmentDb(orgId, type, unit_number);
-    await addUnitTypeDb(orgId, type);
-    return okAsync(data);
+
+    const results = await Promise.allSettled([
+      addEquipmentDb(orgId, type, unit_number, equipmentLimit),
+      addUnitTypeDb(orgId, type),
+    ]);
+
+    const equipmentResult = results[0];
+
+    if (equipmentResult.status === "rejected") {
+      throw equipmentResult.reason;
+    }
+
+    return okAsync(equipmentResult.value);
   } catch (e: unknown) {
     console.error("Error adding equipment:", e);
 

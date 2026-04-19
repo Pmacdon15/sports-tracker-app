@@ -78,17 +78,16 @@ export async function checkoutEquipment(
   });
 
   if (!validatedFields.success) {
-    // If your version of Zod supports it:
     const errorTree = z.treeifyError(validatedFields.error);
-
     return errAsync({
       reason: "Validation failed",
       errors: errorTree,
     } as const);
   }
 
-  const { orgId, userId } = await auth.protect();
+  const { orgId, userId, has } = await auth.protect();
   if (!orgId) return errAsync({ reason: "Unauthorized" } as const);
+
   try {
     const isOverMemberShipLimitValue = await isOverMemberShipLimit(orgId);
     if (isOverMemberShipLimitValue)
@@ -97,7 +96,6 @@ export async function checkoutEquipment(
       } as const);
 
     let guest = await getGuestByNameDb(orgId, guest_name);
-
     if (!guest) {
       guest = await createGuestDb(orgId, guest_name);
     }
@@ -115,12 +113,24 @@ export async function checkoutEquipment(
           reason: `Equipment not found and no type provided for creation.`,
         } as const);
       }
-      equipment = await addEquipmentDb(orgId, type, unit_number);
-      // Ensure the unit type is in the registry
-      addUnitTypeDb(orgId, type);
+
+      let equipmentLimit = 10;
+      if (has({ feature: "200_inventory_items" })) equipmentLimit = 200;
+      else if (has({ feature: "50_inventory_items" })) equipmentLimit = 50;
+
+      const [eqResult] = await Promise.allSettled([
+        addEquipmentDb(orgId, type, unit_number, equipmentLimit),
+        addUnitTypeDb(orgId, type),
+      ]);
+
+      if (eqResult.status === "rejected") {
+        return errAsync({ reason: "Failed to create equipment" } as const);
+      }
+
+      equipment = eqResult.value;
     }
 
-    if (equipment.status !== "AVAILABLE") {
+    if (!equipment || equipment.status !== "AVAILABLE") {
       return errAsync({
         reason: `Equipment is not available`,
       } as const);
@@ -129,11 +139,9 @@ export async function checkoutEquipment(
     return okAsync(
       await checkoutEquipmentDb(userId, orgId, equipment.id, guest.id),
     );
-    // return { data, error: null };
   } catch (e: unknown) {
     console.error("Error checking out equipment:", e);
-
-    return errAsync({ reason: "Unknown error." } as const);
+    return errAsync({ reason: "Unknown error" } as const);
   }
 }
 
@@ -170,6 +178,6 @@ export async function returnEquipment(unit_number: string) {
     return okAsync(await returnEquipmentDb(orgId, equipment.id, userId));
   } catch (e: unknown) {
     console.error("Error returning equipment:", e);
-    return errAsync({ reason: "Unknown error." } as const);
+    return errAsync({ reason: "Unknown error" } as const);
   }
 }

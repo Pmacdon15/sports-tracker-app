@@ -1,32 +1,34 @@
 import { clerkClient } from "@clerk/nextjs/server";
-import {
-  updateOrganizationEquipmentLimitDb,
-  upsertOrganizationDb,
-} from "@/db/organizations";
+import { insertOrganizationDb } from "@/db/organizations";
 
-export async function handleSubscriptionUpdate({
-  orgId,
-  plan,
-}: {
-  orgId: string;
-  plan: string;
-}) {
-  console.log(
-    `Subscription update for organization ${orgId} with plan ${plan}`,
-  );
+export async function handleSubscriptionUpdate(
+  userId: string | undefined,
+  orgId: string,
+) {
+  if (!userId) return;
 
   const clerk = await clerkClient();
 
-  if (plan === "free") {
-    await clerk.organizations.updateOrganization(orgId, {
-      maxAllowedMemberships: 1,
+  try {
+    const subscription =
+      await clerk.billing.getOrganizationBillingSubscription(orgId);
+    const features =
+      subscription.subscriptionItems.flatMap((plan: any) => plan.features) || [];
+
+    let maxOrgs = 1;
+    if (features.includes("2_organization")) maxOrgs = 2;
+    // if (features.includes("4_organization")) maxOrgs = 4;
+
+    await clerk.users.updateUserMetadata(userId, {
+      publicMetadata: {
+        maxOrgs,
+      },
     });
-    await updateOrganizationEquipmentLimitDb(orgId, 10);
-  } else if (plan === "basic") {
-    await clerk.organizations.updateOrganization(orgId, {
-      maxAllowedMemberships: 4,
+  } catch (error) {
+    console.error("Error updating org amount limit: ", error);
+    await clerk.users.updateUserMetadata(userId, {
+      publicMetadata: { maxOrgs: 1 },
     });
-    await updateOrganizationEquipmentLimitDb(orgId, 50);
   }
 }
 
@@ -34,5 +36,5 @@ export async function handleOrganizationCreated(
   orgId: string,
   orgName: string,
 ) {
-  await upsertOrganizationDb(orgId, orgName);
+  await insertOrganizationDb(orgId, orgName);
 }

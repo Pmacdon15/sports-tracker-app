@@ -6,21 +6,20 @@ import {
 } from "@/dal/webhooks";
 export async function POST(req: NextRequest) {
   try {
-    
     const evt = (await verifyWebhook(req, {
       signingSecret: process.env.CLERK_WEBHOOK_SIGNING_SECRET as string,
     })) as WebhookEvent;
 
-    
     switch (evt.type) {
       case "subscriptionItem.active": {
-        const data = evt.data
+        const data = evt.data;
 
         const plan = data.plan?.slug;
         const orgId = data.payer?.organization_id;
+        const userId = data.payer?.user_id;
 
         if (plan && orgId) {
-          await handleSubscriptionUpdate({ orgId, plan });
+          await handleSubscriptionUpdate(userId, orgId);
         }
         break;
       }

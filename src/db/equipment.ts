@@ -54,10 +54,11 @@ export async function addEquipmentDb(
   orgId: string,
   type: string,
   unit_number: string,
+  equipmentLimit: number,
 ): Promise<Equipment> {
   const sql = getSql();
 
-  await isOverEquipmentLimitDb(orgId);
+  await isOverEquipmentLimitDb(orgId, equipmentLimit);
   const res = await sql`
     INSERT INTO equipment (type, unit_number, org_id) 
     VALUES (${type}, ${unit_number}, ${orgId}) 
@@ -95,11 +96,13 @@ export async function deleteEquipmentDb(
   return res.length > 0;
 }
 
-export async function triggerOverLimitWorkflowIfNecessaryDb(orgId: string) {
+export async function triggerOverLimitWorkflowIfNecessaryDb(
+  orgId: string,
+  equipmentLimit: number,
+) {
   const sql = getSql();
   const [orgData] = await sql`
-    SELECT 
-      o.equipment_limit,
+    SELECT       
       o.remind_workflow_active,
       (SELECT COUNT(*) FROM equipment WHERE org_id = ${orgId} AND status <> 'DELETED' AND status <> 'RETIRED') as current_count
     FROM organizations o
@@ -107,7 +110,7 @@ export async function triggerOverLimitWorkflowIfNecessaryDb(orgId: string) {
   `;
 
   if (!orgData) {
-    return { current_count: 0, equipment_limit: 0, is_over: false };
+    return { current_count: 0, is_over: false };
   }
 
   const current_count = Number(orgData.current_count);
@@ -134,18 +137,23 @@ export async function triggerOverLimitWorkflowIfNecessaryDb(orgId: string) {
 
   return {
     current_count,
-    equipment_limit,
-    is_over: current_count > equipment_limit,
+    equipmentLimit,
+    is_over: current_count > equipmentLimit,
   };
 }
 
-export async function isOverEquipmentLimitDb(orgId: string) {
-  const { current_count, equipment_limit } =
-    await triggerOverLimitWorkflowIfNecessaryDb(orgId);
+export async function isOverEquipmentLimitDb(
+  orgId: string,
+  equipmentLimit: number,
+) {
+  const { current_count } = await triggerOverLimitWorkflowIfNecessaryDb(
+    orgId,
+    equipmentLimit,
+  );
 
-  if (current_count >= equipment_limit) {
+  if (current_count >= equipmentLimit) {
     throw new Error(
-      `Equipment limit reached (${equipment_limit}). Please upgrade your plan.`,
+      `Equipment limit reached (${equipmentLimit}). Please upgrade your plan.`,
     );
   }
 }

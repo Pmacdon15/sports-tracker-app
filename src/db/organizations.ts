@@ -2,7 +2,7 @@ import { getSql } from "./db";
 import { triggerOverLimitWorkflowIfNecessaryDb } from "./equipment";
 import type { Organization } from "./types";
 
-export async function upsertOrganizationDb(
+export async function insertOrganizationDb(
   orgId: string,
   name: string,
 ): Promise<Organization> {
@@ -29,9 +29,9 @@ export async function updateOrganizationEquipmentLimitDb(
     RETURNING *
   `;
 
-  if (res.length > 0) {
-    await triggerOverLimitWorkflowIfNecessaryDb(orgId);
-  }
+  // if (res.length > 0) {
+  //   await triggerOverLimitWorkflowIfNecessaryDb(orgId);
+  // }
 
   return (res[0] as unknown as Organization) || null;
 }
