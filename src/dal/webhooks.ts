@@ -52,11 +52,11 @@ export async function handleSubscriptionUpdate(
 
     console.log(
       "Updating user metadata for",
-      targetUserId,
+      userId,
       "with maxOrgs:",
       maxOrgs,
     );
-    await clerk.users.updateUserMetadata(targetUserId, {
+    await clerk.users.updateUserMetadata(userId, {
       publicMetadata: {
         maxOrgs,
       },
@@ -64,7 +64,7 @@ export async function handleSubscriptionUpdate(
     console.log("User metadata updated successfully");
   } catch (error) {
     console.error("Error updating user maxOrgs: ", error);
-    await clerk.users.updateUserMetadata(targetUserId, {
+    await clerk.users.updateUserMetadata(userId, {
       publicMetadata: { maxOrgs: 1 },
     });
   }
