@@ -2,37 +2,39 @@ import { clerkClient } from "@clerk/nextjs/server";
 import { insertOrganizationDb } from "@/db/organizations";
 
 export async function handleSubscriptionUpdate(
-  userId: string | undefined,
-  orgId: string | undefined, 
+  email: string | undefined,
+  orgId: string | undefined,
 ) {
-  console.log("handleSubscriptionUpdate called with:", {
-    userId,
-    orgId,   
-  });
-
   const clerk = await clerkClient();
 
-  if (!userId) {
-    console.error("Could not determine target user ID for subscription update");
-    return;
-  }
-
   try {
-    let subscription: any;
-    if (orgId) {
-      console.log("Fetching subscription for org:", orgId);
-      subscription =
-        await clerk.billing.getOrganizationBillingSubscription(orgId);
-    } else {
-      console.log("No orgId, fetching subscription for user:", userId);
-      subscription =
-        await clerk.billing.getUserBillingSubscription(userId);
+    const userPromise = email
+      ? clerk.users.getUserList({ emailAddress: [email], limit: 1 })
+      : Promise.resolve(null);
+
+    const orgSubPromise = orgId
+      ? clerk.billing.getOrganizationBillingSubscription(orgId)
+      : Promise.resolve(null);
+
+    const [userResponse, orgSubscription] = await Promise.all([
+      userPromise,
+      orgSubPromise,
+    ]);
+
+    const user = userResponse?.data?.[0];
+    const userId = user?.id;
+
+    if (!userId) {
+      return;
     }
 
-    console.log("Subscription fetched:", JSON.stringify(subscription, null, 2));
+    let subscription = orgSubscription;
+
+    if (!orgId) {
+      subscription = await clerk.billing.getUserBillingSubscription(userId);
+    }
 
     if (!subscription) {
-      console.log("No subscription found");
       await clerk.users.updateUserMetadata(userId, {
         publicMetadata: { maxOrgs: 1 },
       });
@@ -40,33 +42,33 @@ export async function handleSubscriptionUpdate(
     }
 
     const features =
-      subscription.subscriptionItems.flatMap((item: any) => {
+      subscription.subscriptionItems?.flatMap((item: any) => {
         const itemFeatures = item.features || [];
         const planFeatures = item.plan?.features || [];
         return [...itemFeatures, ...planFeatures];
       }) || [];
 
-    console.log("Extracted features:", features);
     let maxOrgs = 1;
     if (features.includes("2_organizations")) maxOrgs = 2;
 
-    console.log(
-      "Updating user metadata for",
-      userId,
-      "with maxOrgs:",
-      maxOrgs,
-    );
     await clerk.users.updateUserMetadata(userId, {
       publicMetadata: {
         maxOrgs,
       },
     });
-    console.log("User metadata updated successfully");
   } catch (error) {
-    console.error("Error updating user maxOrgs: ", error);
-    await clerk.users.updateUserMetadata(userId, {
-      publicMetadata: { maxOrgs: 1 },
-    });
+    if (email) {
+      const userSearch = await clerk.users.getUserList({
+        emailAddress: [email],
+        limit: 1,
+      });
+      const fallbackId = userSearch?.data?.[0]?.id;
+      if (fallbackId) {
+        await clerk.users.updateUserMetadata(fallbackId, {
+          publicMetadata: { maxOrgs: 1 },
+        });
+      }
+    }
   }
 }
 

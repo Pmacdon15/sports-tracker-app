@@ -27,13 +27,14 @@ export async function POST(req: NextRequest) {
         console.log("Subscription data:", JSON.stringify(data, null, 2));
 
       
-        const userId = data.payer?.user_id || data.user_id || data.customer_id;
+        // const userId = data.payer?.user_id || data.user_id || data.customer_id;
         const orgId = data.payer?.organization_id || data.organization_id;
-        
+        const email = data.payer?.email || data.email;
+
         console.log("Extracted identifiers:", { userId, orgId});
 
-        if (userId || orgId ) {
-          await handleSubscriptionUpdate(userId, orgId);
+        if ( orgId || email) {
+          await handleSubscriptionUpdate(email, orgId);
         } else {
           console.error("No userId, orgId, or email found in subscriptionItem.active event data");
         }
