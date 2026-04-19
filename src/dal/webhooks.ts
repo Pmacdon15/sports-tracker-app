@@ -26,7 +26,7 @@ export async function handleSubscriptionUpdate(
 
     if (!userId) {
       return;
-    }   
+    }
 
     const features =
       orgSubscription?.subscriptionItems?.flatMap((item: any) => {
@@ -35,6 +35,7 @@ export async function handleSubscriptionUpdate(
         return [...itemFeatures, ...planFeatures];
       }) || [];
 
+    console.log("Features: ", features);
     let maxOrgs = 1;
     if (features.includes("2_organizations")) maxOrgs = 2;
 

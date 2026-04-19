@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
     switch (evt.type) {
       case "subscriptionItem.active": {
         const data = evt.data as any;
-        console.log("Subscription data:", JSON.stringify(data, null, 2));
+        // console.log("Subscription data:", JSON.stringify(data, null, 2));
 
       
         // const userId = data.payer?.user_id || data.user_id || data.customer_id;
