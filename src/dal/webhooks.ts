@@ -26,23 +26,10 @@ export async function handleSubscriptionUpdate(
 
     if (!userId) {
       return;
-    }
-
-    let subscription = orgSubscription;
-
-    if (!orgId) {
-      subscription = await clerk.billing.getUserBillingSubscription(userId);
-    }
-
-    if (!subscription) {
-      await clerk.users.updateUserMetadata(userId, {
-        publicMetadata: { maxOrgs: 1 },
-      });
-      return;
-    }
+    }   
 
     const features =
-      subscription.subscriptionItems?.flatMap((item: any) => {
+      orgSubscription?.subscriptionItems?.flatMap((item: any) => {
         const itemFeatures = item.features || [];
         const planFeatures = item.plan?.features || [];
         return [...itemFeatures, ...planFeatures];
@@ -51,24 +38,11 @@ export async function handleSubscriptionUpdate(
     let maxOrgs = 1;
     if (features.includes("2_organizations")) maxOrgs = 2;
 
-    await clerk.users.updateUserMetadata(userId, {
-      publicMetadata: {
-        maxOrgs,
-      },
+    await clerk.users.updateUser(userId, {
+      createOrganizationsLimit: maxOrgs,
     });
   } catch (error) {
-    if (email) {
-      const userSearch = await clerk.users.getUserList({
-        emailAddress: [email],
-        limit: 1,
-      });
-      const fallbackId = userSearch?.data?.[0]?.id;
-      if (fallbackId) {
-        await clerk.users.updateUserMetadata(fallbackId, {
-          publicMetadata: { maxOrgs: 1 },
-        });
-      }
-    }
+    console.error("Error updating subscription features");
   }
 }
 
