@@ -35,9 +35,11 @@ export async function handleSubscriptionUpdate(
         return [...itemFeatures, ...planFeatures];
       }) || [];
 
-    console.log("Features: ", features);
+    const slugs = features.map((f: any) => f.slug);
+    console.log("Features: ", slugs);
+
     let maxOrgs = 1;
-    if (features.includes("2_organizations")) maxOrgs = 2;
+    if (slugs.includes("2_organizations")) maxOrgs = 2;
 
     await clerk.users.updateUser(userId, {
       createOrganizationsLimit: maxOrgs,
