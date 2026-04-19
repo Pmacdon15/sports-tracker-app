@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
         const orgId = data.payer?.organization_id || data.organization_id;
         const email = data.payer?.email || data.email;
 
-        console.log("Extracted identifiers:", { userId, orgId});
+        console.log("Extracted identifiers:", { email, orgId});
 
         if ( orgId || email) {
           await handleSubscriptionUpdate(email, orgId);
