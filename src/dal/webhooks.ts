@@ -41,8 +41,7 @@ export async function handleSubscriptionUpdate(
     let maxOrgs = 1;
     if (slugs.includes("2_organizations")) maxOrgs = 2;
 
-    await clerk.users.
-    (userId, {
+    await clerk.users.updateUser(userId, {
       createOrganizationsLimit: maxOrgs,
     });
   } catch (error) {
