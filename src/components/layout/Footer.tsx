@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export function Footer() {
   return (
-    <footer className="w-full border-t bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
+    <footer className="w-full border-t border-border/50 bg-card/50">
       <div className="container mx-auto flex flex-col items-center justify-between gap-4 py-10 md:h-24 md:flex-row md:py-0 px-4 md:px-8">
         <div className="flex items-center gap-2">
           <Dumbbell className="h-5 w-5 text-primary" />
