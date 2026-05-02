@@ -9,7 +9,7 @@ DROP TABLE IF EXISTS organizations;
 CREATE TABLE IF NOT EXISTS organizations (
   org_id VARCHAR(255) PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
-  equipment_limit INTEGER DEFAULT 10,
+  -- equipment_limit INTEGER DEFAULT 10,TODO: remove this field from the db
   remind_workflow_active BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
