@@ -22,7 +22,7 @@ export function Hero() {
           <Show when="signed-out">
             <Link href={"/inventory"}>
               <Button
-                size="xl"
+                size="lg"
                 className="w-full sm:w-auto font-medium px-10 h-14 text-base rounded-none bg-foreground text-background hover:bg-foreground/90 transition-colors group"
               >
                 Get Started
@@ -34,7 +34,7 @@ export function Hero() {
         <Suspense>
           <Show when="signed-in">
             <Button
-              size="xl"
+              size="lg"
               render={<Link href="/tracker" />}
               nativeButton={false}
               className="w-full sm:w-auto font-medium px-10 h-14 text-base rounded-none bg-foreground text-background hover:bg-foreground/90 transition-colors group"
