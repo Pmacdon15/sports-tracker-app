@@ -24,7 +24,10 @@ export async function getActiveRentals(): Promise<DbResult<Transaction[]>> {
     const data = await getActiveRentalsDb(orgId);
     return { data, error: null };
   } catch (e: unknown) {
-    if ((e as any)?.code === '42P01' || (e instanceof Error && e.message.includes('does not exist'))) {
+    if (
+      (e as any)?.code === "42P01" ||
+      (e instanceof Error && e.message.includes("does not exist"))
+    ) {
       return { data: [], error: null };
     }
     console.error("Error fetching active rentals:", e);
@@ -43,9 +46,7 @@ export async function getCompletedRentals(
     const data = await getCompletedRentalsDb(orgId, date, timeZone);
     return { data, error: null };
   } catch (e: unknown) {
-    if ((e as any)?.code === '42P01' || (e instanceof Error && e.message.includes('does not exist'))) {
-      return { data: [], error: null };
-    }
+ 
     console.error("Error fetching completed rentals:", e);
     return {
       data: null,
@@ -67,10 +68,7 @@ export async function getGuestTransactions(
     const data = await getGuestTransactionsDb(orgId, id);
     return { data, error: null };
   } catch (e: unknown) {
-    if ((e as any)?.code === '42P01' || (e instanceof Error && e.message.includes('does not exist'))) {
-      return { data: [], error: null };
-    }
-    console.error("Error fetching guest transactions:", e);
+       console.error("Error fetching guest transactions:", e);
     return { data: null, error: "Failed to fetch guest trips" };
   }
 }
@@ -150,8 +148,14 @@ export async function checkoutEquipment(
     );
   } catch (e: unknown) {
     console.error("Error checking out equipment:", e);
-    if ((e as any)?.code === '42P01' || (e instanceof Error && e.message.includes('does not exist'))) {
-      return errAsync({ reason: "Database tables are missing. Please run schema.sql to initialize your database." } as const);
+    if (
+      (e as any)?.code === "42P01" ||
+      (e instanceof Error && e.message.includes("does not exist"))
+    ) {
+      return errAsync({
+        reason:
+          "Database tables are missing. Please run schema.sql to initialize your database.",
+      } as const);
     }
     return errAsync({ reason: "Unknown error" } as const);
   }
@@ -159,8 +163,12 @@ export async function checkoutEquipment(
 
 export async function returnEquipment(unit_number: string, photoUrl?: string) {
   try {
-    const { orgId, userId } = await auth.protect();
-    if (!orgId) return errAsync({ reason: "Unauthorized" } as const);
+    const { orgId, userId, has } = await auth.protect();
+
+    const hasImageStorage = has({ feature: "store_images" });
+
+    if (!orgId || !hasImageStorage)
+      return errAsync({ reason: "Unauthorized" } as const);
 
     const validatedFields = returnSchema.safeParse({
       unit_number,
@@ -187,11 +195,19 @@ export async function returnEquipment(unit_number: string, photoUrl?: string) {
       return errAsync({ reason: "Equipment is not checked out." } as const);
     }
 
-    return okAsync(await returnEquipmentDb(orgId, equipment.id, userId, photoUrl));
+    return okAsync(
+      await returnEquipmentDb(orgId, equipment.id, userId, photoUrl),
+    );
   } catch (e: unknown) {
     console.error("Error returning equipment:", e);
-    if ((e as any)?.code === '42P01' || (e instanceof Error && e.message.includes('does not exist'))) {
-      return errAsync({ reason: "Database tables are missing. Please run schema.sql to initialize your database." } as const);
+    if (
+      (e as any)?.code === "42P01" ||
+      (e instanceof Error && e.message.includes("does not exist"))
+    ) {
+      return errAsync({
+        reason:
+          "Database tables are missing. Please run schema.sql to initialize your database.",
+      } as const);
     }
     return errAsync({ reason: "Unknown error" } as const);
   }

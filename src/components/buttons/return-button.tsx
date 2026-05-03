@@ -28,7 +28,6 @@ export default function ReturnButton({
   const { has } = useAuth();
   const hasImageStorage = has({ feature: "store_images" });
 
-
   const [open, setOpen] = useState(false);
   const [photo, setPhoto] = useState<File | null>(null);
   const [isCompressing, setIsCompressing] = useState(false);

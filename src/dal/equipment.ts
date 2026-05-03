@@ -25,9 +25,6 @@ export async function getAllEquipment(): Promise<DbResult<Equipment[]>> {
     // const data = await getMockEquipment(orgId);
     return { data, error: null };
   } catch (e: unknown) {
-    if ((e as any)?.code === '42P01' || (e instanceof Error && e.message.includes('does not exist'))) {
-      return { data: [], error: null };
-    }
     console.error("Error fetching all equipment:", e);
     return { data: null, error: "Failed to fetch equipment" };
   }

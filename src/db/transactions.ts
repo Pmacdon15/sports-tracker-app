@@ -31,7 +31,10 @@ export async function getCompletedRentalsDb(
   const targetDate = date ?? new Date().toISOString().split("T")[0];
 
   // 2. Update cacheTag to use the resolved date
-  cacheTag(`completed-rentals-${orgId}-${targetDate}-${timezone}`);
+  cacheTag(
+    `completed-rentals-${orgId}-${targetDate}-${timezone}`,
+    "completed-rentals",
+  );
 
   const sql = getSql();
 
@@ -125,4 +128,14 @@ export async function returnEquipmentDb(
   `;
 
   return (res[0] as unknown as Transaction) || null;
+}
+
+export async function clearTransactionPhotosDb(urls: string[]) {
+  if (urls.length === 0) return;
+  const sql = getSql();
+  await sql`
+    UPDATE transactions
+    SET return_photo_url = NULL
+    WHERE return_photo_url = ANY(${urls})
+  `;
 }
