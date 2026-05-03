@@ -1,26 +1,8 @@
 import { sleep } from "workflow";
-import { getSql } from "../db/db";
-import { retireExcessEquipmentDb } from "../db/equipment-retirement";
+import { clearWorkflowFlagStep } from "./functions/clear-workflow-flag-step";
+import { disableExcessStep } from "./functions/disable-excess-equipment";
 import { getAdminEmailsStep } from "./functions/get-admin-emails";
 import { SendEmail } from "./functions/send-email";
-
-// Define the step here for better discovery by the workflow engine
-export async function retireExcessStep(orgId: string) {
-  "use step";
-  console.log("Executing retirement step for org:", orgId);
-  await retireExcessEquipmentDb(orgId);
-}
-
-export async function clearWorkflowFlagStep(orgId: string) {
-  "use step";
-  const sql = getSql();
-  await sql`
-    UPDATE organizations
-    SET remind_workflow_active = false
-    WHERE org_id = ${orgId}
-  `;
-  console.log("Cleared workflow active flag for org:", orgId);
-}
 
 export async function remindOverLimit(orgId: string) {
   "use workflow";
@@ -28,23 +10,25 @@ export async function remindOverLimit(orgId: string) {
 
   await SendEmail(
     emails,
-    "Urgent: Organization is over limit. Oldest items will be retired automatically in 1 week.",
+    "Urgent: Organization is over limit. Oldest items will be disabled automatically in 1 week.",
   );
 
-  await sleep("7d");
+  // await sleep("7d");
+  // await sleep("1m");
 
   await SendEmail(
     emails,
-    "System Notice: Excess equipment will be retired to match your plan limits in one day.",
+    "System Notice: Excess equipment will be disabled to match your plan limits in one day.",
   );
-  await sleep("1d");
+  // await sleep("1d");
+  // await sleep("1m");
 
-  // Retire excess equipment
-  await retireExcessStep(orgId);
+  // Disable excess equipment
+  await disableExcessStep(orgId);
 
   await SendEmail(
     emails,
-    "System Notice: Excess equipment has been retired to match your plan limits.",
+    "System Notice: Excess equipment has been disabled to match your plan limits.",
   );
 
   // Clear the flag so a new workflow can be triggered if they go over limit again

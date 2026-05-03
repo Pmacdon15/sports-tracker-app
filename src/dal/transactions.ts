@@ -3,7 +3,11 @@ import { errAsync, okAsync } from "neverthrow";
 import { connection } from "next/server";
 import z from "zod";
 import { isOverMemberShipLimit } from "@/db/auth";
-import { addEquipmentDb, getEquipmentByUnitDb } from "@/db/equipment";
+import {
+  addEquipmentDb,
+  getEquipmentByUnitDb,
+  isOverEquipmentLimit,
+} from "@/db/equipment";
 import { createGuestDb, getGuestByNameDb } from "@/db/guests";
 import {
   checkoutEquipmentDb,
@@ -46,7 +50,6 @@ export async function getCompletedRentals(
     const data = await getCompletedRentalsDb(orgId, date, timeZone);
     return { data, error: null };
   } catch (e: unknown) {
- 
     console.error("Error fetching completed rentals:", e);
     return {
       data: null,
@@ -68,7 +71,7 @@ export async function getGuestTransactions(
     const data = await getGuestTransactionsDb(orgId, id);
     return { data, error: null };
   } catch (e: unknown) {
-       console.error("Error fetching guest transactions:", e);
+    console.error("Error fetching guest transactions:", e);
     return { data: null, error: "Failed to fetch guest trips" };
   }
 }
@@ -102,7 +105,11 @@ export async function checkoutEquipment(
         reason: "Over organization membership limit.",
       } as const);
 
-    let guest = await getGuestByNameDb(orgId, guest_name);
+    let [guest, equipment] = await Promise.all([
+      getGuestByNameDb(orgId, guest_name),
+      getEquipmentByUnitDb(orgId, unit_number),
+    ]);
+
     if (!guest) {
       guest = await createGuestDb(orgId, guest_name);
     }
@@ -112,9 +119,7 @@ export async function checkoutEquipment(
         reason: "Failed to create or retrieve guest.",
       } as const);
 
-    let equipment = await getEquipmentByUnitDb(orgId, unit_number);
-
-    if (!equipment) {
+       if (!equipment) {
       if (!type) {
         return errAsync({
           reason: `Equipment not found and no type provided for creation.`,
@@ -125,8 +130,10 @@ export async function checkoutEquipment(
       if (has({ feature: "200_inventory_items" })) equipmentLimit = 200;
       else if (has({ feature: "50_inventory_items" })) equipmentLimit = 50;
 
+      await isOverEquipmentLimit(orgId, equipmentLimit);
+
       const [eqResult] = await Promise.allSettled([
-        addEquipmentDb(orgId, type, unit_number, equipmentLimit),
+        addEquipmentDb(orgId, type, unit_number),
         addUnitTypeDb(orgId, type),
       ]);
 

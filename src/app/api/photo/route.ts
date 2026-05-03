@@ -1,8 +1,9 @@
 import { auth } from "@clerk/nextjs/server";
 import { get } from "@vercel/blob";
-import { NextResponse } from "next/server";
+import { connection, NextResponse } from "next/server";
 
 export async function GET(request: Request) {
+  await connection;
   try {
     const { userId, orgId } = await auth.protect();
     if (!userId || !orgId) {
@@ -16,7 +17,7 @@ export async function GET(request: Request) {
       return new NextResponse("Missing url parameter", { status: 400 });
     }
 
-    const blob = await get(url, { access: 'private' });
+    const blob = await get(url, { access: "private" });
 
     if (!blob) {
       return new NextResponse("Blob not found", { status: 404 });
@@ -24,7 +25,10 @@ export async function GET(request: Request) {
 
     // Set Cache-Control to ensure the proxy route is hit and authenticated each time
     const responseHeaders = new Headers();
-    responseHeaders.set("Cache-Control", "private, no-cache, no-store, must-revalidate");
+    responseHeaders.set(
+      "Cache-Control",
+      "private, no-cache, no-store, must-revalidate",
+    );
 
     return new NextResponse(blob.stream, { headers: responseHeaders });
   } catch (error) {

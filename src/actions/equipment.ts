@@ -4,7 +4,7 @@ import { okAsync } from "neverthrow";
 import { updateTag } from "next/cache";
 import {
   addEquipment,
-  deleteEquipment,
+  deleteEquipment, 
   retireEquipment,
 } from "@/dal/equipment";
 import { handleMutationError } from "./utils";
@@ -32,3 +32,11 @@ export async function retireEquipmentAction(unit_number: string) {
     return { value: data };
   }, handleMutationError);
 }
+
+// export async function disableEquipmentAction(unit_number: string) {
+//   const res = await disableEquipment(unit_number);
+//   return res.match((data) => {
+//     updateTag(`equipment-${data.org_id}`);
+//     return { value: data };
+//   }, handleMutationError);
+// }

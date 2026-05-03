@@ -46,3 +46,11 @@ export async function getOrganizationDb(
   `;
   return (res[0] as unknown as Organization) || null;
 }
+
+export async function getAllOrganizationsDb(): Promise<Organization[]> {
+  const sql = getSql();
+  const res = await sql`
+    SELECT * FROM organizations
+  `;
+  return res as unknown as Organization[];
+}

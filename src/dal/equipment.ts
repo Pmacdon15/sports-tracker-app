@@ -6,6 +6,7 @@ import {
   addEquipmentDb,
   getAllEquipmentDb,
   getEquipmentByUnitDb,
+  isOverEquipmentLimit,
   updateEquipmentStatusDb,
 } from "@/db/equipment";
 import type { DbResult, Equipment } from "@/db/types";
@@ -59,7 +60,7 @@ export async function addEquipment(type: string, unit_number: string) {
 
     let equipmentLimit= 10
     const limitIs50 = has({ feature: "50_inventory_items" });
-     const limitIs200 = has({ feature: "200_inventory_items" });
+    const limitIs200 = has({ feature: "200_inventory_items" });
     if (limitIs50) equipmentLimit = 50;
     else if(limitIs200) equipmentLimit = 200    
 
@@ -73,8 +74,10 @@ export async function addEquipment(type: string, unit_number: string) {
       } as const);
     }
 
+    await isOverEquipmentLimit(orgId, equipmentLimit);
+
     const results = await Promise.allSettled([
-      addEquipmentDb(orgId, type, unit_number, equipmentLimit),
+      addEquipmentDb(orgId, type, unit_number),
       addUnitTypeDb(orgId, type),
     ]);
 
@@ -154,3 +157,31 @@ export async function retireEquipment(unit_number: string) {
     return errAsync({ reason: "Failed to retire equipment" } as const);
   }
 }
+
+// export async function disableEquipment(unit_number: string) {
+//   try {
+//     const { orgId, has } = await auth.protect();
+//     const isAdmin = has({ role: "org:admin" });
+//     if (!orgId || !isAdmin)
+//       return errAsync({ reason: "Unauthorized" } as const);
+
+//     const validatedFields = deleteEquipmentSchema.safeParse({
+//       unit_number,
+//     });
+
+//     if (!validatedFields.success) {
+//       // If your version of Zod supports it:
+//       const errorTree = z.treeifyError(validatedFields.error);
+
+//       return errAsync({
+//         reason: "Validation failed",
+//         errors: errorTree,
+//       } as const);
+//     }
+//     const data = await updateEquipmentStatusDb(orgId, unit_number, "DISABLED");
+//     return okAsync(data);
+//   } catch (e: unknown) {
+//     console.error("Error disabling equipment:", e);
+//     return errAsync({ reason: "Failed to disable equipment" } as const);
+//   }
+// }

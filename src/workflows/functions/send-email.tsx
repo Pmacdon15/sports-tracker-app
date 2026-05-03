@@ -45,6 +45,6 @@ export async function SendEmail(
     await ses.send(command);
   } catch (error) {
     console.error("SES error:", error);
-    throw new Error("Error sending reminder email via SES");
+    // throw new Error("Error sending reminder email via SES");
   }
 }

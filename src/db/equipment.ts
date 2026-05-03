@@ -1,4 +1,4 @@
-import { cacheTag } from "next/cache";
+import { cacheTag, revalidateTag } from "next/cache";
 import { start } from "workflow/api";
 import { remindOverLimit } from "../workflows/remind-over-limit";
 import { getSql } from "./db";
@@ -54,11 +54,8 @@ export async function addEquipmentDb(
   orgId: string,
   type: string,
   unit_number: string,
-  equipmentLimit: number,
 ): Promise<Equipment> {
   const sql = getSql();
-
-  await isOverEquipmentLimitDb(orgId, equipmentLimit);
   const res = await sql`
     INSERT INTO equipment (type, unit_number, org_id) 
     VALUES (${type}, ${unit_number}, ${orgId}) 
@@ -104,7 +101,7 @@ export async function triggerOverLimitWorkflowIfNecessaryDb(
   const [orgData] = await sql`
     SELECT       
       o.remind_workflow_active,
-      (SELECT COUNT(*) FROM equipment WHERE org_id = ${orgId} AND status <> 'DELETED' AND status <> 'RETIRED') as current_count
+      (SELECT COUNT(*) FROM equipment WHERE org_id = ${orgId} AND status NOT IN ('DELETED', 'RETIRED', 'DISABLED')) as current_count
     FROM organizations o
     WHERE o.org_id = ${orgId}
   `;
@@ -114,10 +111,10 @@ export async function triggerOverLimitWorkflowIfNecessaryDb(
   }
 
   const current_count = Number(orgData.current_count);
-  const equipment_limit = orgData.equipment_limit;
-  console.log("Data: ", current_count, equipment_limit);
+
+  console.log("Data: ", current_count, equipmentLimit);
   console.log("Org Data: ", orgData);
-  if (current_count > equipment_limit) {
+  if (current_count > equipmentLimit) {
     // Only start the workflow if one isn't already running for this org.
     // Use an atomic update to claim the lock — if no row is returned, another
     // workflow is already active and we skip starting a new one.
@@ -131,6 +128,8 @@ export async function triggerOverLimitWorkflowIfNecessaryDb(
       console.log("claimed: ", claimed.length);
       if (claimed.length > 0) {
         await start(remindOverLimit, [orgId]);
+      } else {
+        await rebalanceEquipmentDb(orgId, equipmentLimit);
       }
     }
   }
@@ -142,14 +141,52 @@ export async function triggerOverLimitWorkflowIfNecessaryDb(
   };
 }
 
-export async function isOverEquipmentLimitDb(
+export async function rebalanceEquipmentDb(orgId: string, limit: number) {
+  const sql = getSql();
+
+  // Count current active items
+  const [countData] = await sql`
+    SELECT COUNT(*) as current_count FROM equipment 
+    WHERE org_id = ${orgId} AND status NOT IN ('DELETED', 'RETIRED', 'DISABLED')
+  `;
+  const currentCount = Number(countData.current_count);
+
+  if (currentCount < limit) {
+    const spaceAvailable = limit - currentCount;
+
+    // Enable disabled or retired items, newest first
+    const rebalanced = await sql`
+      UPDATE equipment 
+      SET status = 'AVAILABLE'
+      WHERE id IN (
+        SELECT id FROM equipment 
+        WHERE org_id = ${orgId} AND status IN ('DISABLED')
+        ORDER BY created_at DESC
+        LIMIT ${spaceAvailable}
+      )
+      RETURNING id
+    `;
+
+    if (rebalanced.length > 0) {
+      console.log(
+        `[REBALANCE] Re-enabled ${rebalanced.length} items for org ${orgId}`,
+      );
+      revalidateTag(`equipment-${orgId}`, "max");
+    }
+  }
+}
+
+export async function isOverEquipmentLimit(
   orgId: string,
   equipmentLimit: number,
 ) {
+  
   const { current_count } = await triggerOverLimitWorkflowIfNecessaryDb(
     orgId,
     equipmentLimit,
   );
+
+  console.log(" equipmentLimit: ", equipmentLimit)
 
   if (current_count >= equipmentLimit) {
     throw new Error(

@@ -3,7 +3,7 @@ export interface Equipment {
   type: string;
   unit_number: string;
   org_id: string;
-  status: "AVAILABLE" | "CHECKED_OUT" | "RETIRED" | "DELETED";
+  status: "AVAILABLE" | "CHECKED_OUT" | "RETIRED" | "DELETED" | "DISABLED";
   created_at: Date;
 }
 
