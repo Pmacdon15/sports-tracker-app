@@ -41,6 +41,7 @@ CREATE TABLE IF NOT EXISTS transactions (
   checked_in_at TIMESTAMP,
   checked_in_by VARCHAR(40),
   checked_out_by VARCHAR(40),
+  return_photo_url VARCHAR(1024),
   status VARCHAR(20) DEFAULT 'OUT'
 );
 

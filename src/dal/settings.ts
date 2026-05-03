@@ -20,6 +20,12 @@ export async function getSettings(): Promise<DbResult<Record<string, string>>> {
     }
     return { data: settings, error: null };
   } catch (e: unknown) {
+    if ((e as any)?.code === '42P01' || (e instanceof Error && e.message.includes('does not exist'))) {
+      return { 
+        data: { yellow_trigger_hours: "2", red_trigger_hours: "3" }, 
+        error: null 
+      };
+    }
     console.error("Error fetching settings:", e);
     return { data: null, error: "Failed to fetch settings" };
   }

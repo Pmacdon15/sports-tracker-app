@@ -17,6 +17,9 @@ export async function getAllGuests(): Promise<DbResult<Guest[]>> {
     const data = await getAllGuestsDb(orgId);
     return { data, error: null };
   } catch (e: unknown) {
+    if ((e as any)?.code === '42P01' || (e instanceof Error && e.message.includes('does not exist'))) {
+      return { data: [], error: null };
+    }
     console.error("Error fetching all guests:", e);
     return { data: null, error: "Failed to fetch guests" };
   }
@@ -58,6 +61,9 @@ export async function getGuestStats(
 
     return { data, error: null };
   } catch (e: unknown) {
+    if ((e as any)?.code === '42P01' || (e instanceof Error && e.message.includes('does not exist'))) {
+      return { data: [], error: null };
+    }
     console.error("Error fetching guest stats:", e);
     return { data: null, error: "Failed to fetch guest stats" };
   }
@@ -83,6 +89,9 @@ export async function getGlobalGuestStats(): Promise<
 
     return { data, error: null };
   } catch (e: unknown) {
+    if ((e as any)?.code === '42P01' || (e instanceof Error && e.message.includes('does not exist'))) {
+      return { data: { total_guests: 0, total_trips: 0, avg_trips_per_guest: 0 }, error: null };
+    }
     console.error("Error fetching global guest stats:", e);
     return { data: null, error: "Failed to fetch global stats" };
   }

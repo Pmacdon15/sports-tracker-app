@@ -43,9 +43,15 @@ export function useCheckoutMutation() {
 
 export function useReturnMutation() {
   return useMutation({
-    mutationFn: async (unit_number: string) => {
+    mutationFn: async ({ unit_number, photo }: { unit_number: string; photo?: File | null }) => {
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const res = await returnEquipmentAction(unit_number, timezone);
+      const formData = new FormData();
+      formData.append("unit_number", unit_number);
+      formData.append("timezone", timezone);
+      if (photo) {
+        formData.append("photo", photo);
+      }
+      const res = await returnEquipmentAction(formData);
 
       if (res && "message" in res) {
         throw new Error(res.message);

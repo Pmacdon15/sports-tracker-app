@@ -12,6 +12,9 @@ export async function getAllUnitTypes(): Promise<DbResult<UnitType[]>> {
     const data = await getAllUnitTypesDb(orgId);
     return { data, error: null };
   } catch (e: unknown) {
+    if ((e as any)?.code === '42P01' || (e instanceof Error && e.message.includes('does not exist'))) {
+      return { data: [], error: null };
+    }
     console.error("Error fetching all unit types:", e);
     return { data: null, error: "Failed to fetch unit types" };
   }
