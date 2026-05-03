@@ -35,7 +35,7 @@ export default function CheckoutTab({
   const guests = guestsRes.data || [];
   const equipment = equipmentRes.data || [];
   const unitTypes = equipmentType.data || [];
-  const error = guestsRes.error || equipmentRes.error;
+  // const error = guestsRes.error || equipmentRes.error;
 
   const availableEqOptions = useMemo(
     () =>
@@ -106,92 +106,84 @@ export default function CheckoutTab({
           </CardDescription>
         </CardHeader>
 
-        {error ? (
-          <CardContent className="py-12 text-center text-destructive">
-            {error}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            form.handleSubmit();
+          }}
+        >
+          <CardContent className="space-y-6">
+            {/* Use your original FormFieldCombobox pattern */}
+            <FormFieldCombobox
+              formApi={form}
+              name="guest_name"
+              label="Guest Name"
+              placeholder="Select or Type Guest Name..."
+              options={guestOptions}
+              allowCustom={true}
+              disabled={isPending}
+            />
+
+            <FormFieldCombobox
+              formApi={form}
+              name="unit_number"
+              label="Unit Number / Type"
+              placeholder="Select Available Unit..."
+              options={availableEqOptions}
+              allowCustom={true}
+              disabled={isPending}
+            />
+
+            <form.Subscribe selector={(state) => state.values.unit_number}>
+              {(unit_number) => {
+                const isNewUnit =
+                  unit_number !== "" &&
+                  !availableEqOptions.some((opt) => opt.value === unit_number);
+
+                if (!isNewUnit) return null;
+
+                return (
+                  <div className="space-y-2 p-4 bg-primary/5 rounded-lg border border-primary/20 animate-in fade-in slide-in-from-top-2">
+                    <FormFieldCombobox
+                      formApi={form}
+                      name="type"
+                      label="New Unit Detected - Select Type"
+                      placeholder="Select or Type Unit Type..."
+                      options={unitTypeOptions}
+                      allowCustom={true}
+                      disabled={isPending}
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      This unit will be added to your permanent inventory.
+                    </p>
+                  </div>
+                );
+              }}
+            </form.Subscribe>
           </CardContent>
-        ) : (
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              form.handleSubmit();
-            }}
-          >
-            <CardContent className="space-y-6">
-              {/* Use your original FormFieldCombobox pattern */}
-              <FormFieldCombobox
-                formApi={form}
-                name="guest_name"
-                label="Guest Name"
-                placeholder="Select or Type Guest Name..."
-                options={guestOptions}
-                allowCustom={true}
-                disabled={isPending}
-              />
 
-              <FormFieldCombobox
-                formApi={form}
-                name="unit_number"
-                label="Unit Number / Type"
-                placeholder="Select Available Unit..."
-                options={availableEqOptions}
-                allowCustom={true}
-                disabled={isPending}
-              />
-
-              <form.Subscribe selector={(state) => state.values.unit_number}>
-                {(unit_number) => {
-                  const isNewUnit =
-                    unit_number !== "" &&
-                    !availableEqOptions.some(
-                      (opt) => opt.value === unit_number,
-                    );
-
-                  if (!isNewUnit) return null;
-
-                  return (
-                    <div className="space-y-2 p-4 bg-primary/5 rounded-lg border border-primary/20 animate-in fade-in slide-in-from-top-2">
-                      <FormFieldCombobox
-                        formApi={form}
-                        name="type"
-                        label="New Unit Detected - Select Type"
-                        placeholder="Select or Type Unit Type..."
-                        options={unitTypeOptions}
-                        allowCustom={true}
-                        disabled={isPending}
-                      />
-                      <p className="text-xs text-muted-foreground mt-1">
-                        This unit will be added to your permanent inventory.
-                      </p>
-                    </div>
-                  );
-                }}
-              </form.Subscribe>
-            </CardContent>
-
-            <CardFooter>
-              <form.Subscribe
-                selector={(state) => [state.canSubmit, state.isSubmitting]}
-              >
-                {([canSubmit, isSubmitting]) => (
-                  <Button
-                    type="submit"
-                    disabled={!canSubmit || isPending || isSubmitting}
-                    className="w-full font-semibold text-lg py-6 shadow-md gap-2"
-                  >
-                    {isPending || isSubmitting ? (
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                    ) : (
-                      <ArrowRightIcon className="w-5 h-5" />
-                    )}
-                    {isPending || isSubmitting ? "Processing..." : "Send Out"}
-                  </Button>
-                )}
-              </form.Subscribe>
-            </CardFooter>
-          </form>
-        )}
+          <CardFooter>
+            <form.Subscribe
+              selector={(state) => [state.canSubmit, state.isSubmitting]}
+            >
+              {([canSubmit, isSubmitting]) => (
+                <Button
+                  type="submit"
+                  disabled={!canSubmit || isPending || isSubmitting}
+                  className="w-full font-semibold text-lg py-6 shadow-md gap-2"
+                >
+                  {isPending || isSubmitting ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <ArrowRightIcon className="w-5 h-5" />
+                  )}
+                  {isPending || isSubmitting ? "Processing..." : "Send Out"}
+                </Button>
+              )}
+            </form.Subscribe>
+          </CardFooter>
+        </form>
       </Card>
     </TabsContent>
   );

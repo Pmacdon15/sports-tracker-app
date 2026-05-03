@@ -25,6 +25,7 @@ export interface Transaction {
   equipment_unit: string;
   equipment_type?: string;
   guest_name?: string;
+  return_photo_url?: string | null;
 }
 
 export interface Setting {

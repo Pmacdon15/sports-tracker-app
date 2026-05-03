@@ -12,6 +12,7 @@ import {
 } from "../ui/card";
 import { Input } from "../ui/input";
 import { TabsContent } from "../ui/tabs";
+import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "../ui/dialog";
 import { TimezoneRedirect } from "../auth/TimezoneRedirect";
 import { cn } from "@/lib/utils";
 import { Clock } from "lucide-react";
@@ -175,23 +176,46 @@ export default function ReturnsTab({
                       )}
                     </div>
                   </div>
-                  <div className="text-xs text-muted-foreground text-right flex flex-col items-end">
-                    <span>
-                      {rental.checked_in_at
-                        ? new Date(rental.checked_in_at).toLocaleTimeString(
-                            [],
-                            {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            },
-                          )
-                        : "N/A"}
-                    </span>
-                    <span>
-                      {rental.checked_in_at
-                        ? new Date(rental.checked_in_at).toLocaleDateString()
-                        : ""}
-                    </span>
+                  <div className="text-xs text-muted-foreground text-right flex flex-col items-end gap-2">
+                    <div className="flex flex-col items-end">
+                      <span>
+                        {rental.checked_in_at
+                          ? new Date(rental.checked_in_at).toLocaleTimeString(
+                              [],
+                              {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              },
+                            )
+                          : "N/A"}
+                      </span>
+                      <span>
+                        {rental.checked_in_at
+                          ? new Date(rental.checked_in_at).toLocaleDateString()
+                          : ""}
+                      </span>
+                    </div>
+                    {rental.return_photo_url && (
+                      <div className="mt-1">
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <img 
+                              src={`/api/photo?url=${encodeURIComponent(rental.return_photo_url)}`} 
+                              alt="Return" 
+                              className="w-12 h-12 object-cover rounded-md border cursor-pointer hover:opacity-80 transition-opacity" 
+                            />
+                          </DialogTrigger>
+                          <DialogContent className="max-w-4xl w-full p-1 border-none bg-transparent shadow-none">
+                            <DialogTitle className="sr-only">View Photo</DialogTitle>
+                            <img 
+                              src={`/api/photo?url=${encodeURIComponent(rental.return_photo_url)}`} 
+                              alt="Return Full Size" 
+                              className="w-full h-auto max-h-[85vh] object-contain rounded-lg" 
+                            />
+                          </DialogContent>
+                        </Dialog>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}

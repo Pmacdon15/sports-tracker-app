@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 
 /**
- * All reasons should be treated as unique keys. 
+ * All reasons should be treated as unique keys.
  * Ensure the strings here match exactly what is returned by errAsync in your functions.
  */
 export type ActionErrorReason =
@@ -20,6 +20,7 @@ export type ActionErrorReason =
   | "Failed to add unit type"
   | "Failed to update setting"
   | "Validation failed"
+  | "Database tables are missing. Please run schema.sql to initialize your database."
   | "Test";
 
 export interface ActionError {
@@ -102,6 +103,11 @@ export function handleMutationError(error: ActionError) {
       return {
         message: message || "Form validation failed",
         errors: errors,
+      };
+
+    case "Database tables are missing. Please run schema.sql to initialize your database.":
+      return {
+        message: message || reason,
       };
 
     case "Test":

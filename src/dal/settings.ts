@@ -20,7 +20,7 @@ export async function getSettings(): Promise<DbResult<Record<string, string>>> {
     }
     return { data: settings, error: null };
   } catch (e: unknown) {
-    console.error("Error fetching settings:", e);
+     console.error("Error fetching settings:", e);
     return { data: null, error: "Failed to fetch settings" };
   }
 }

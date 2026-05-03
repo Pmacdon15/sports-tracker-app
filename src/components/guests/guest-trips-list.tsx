@@ -17,6 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog";
 import type { DbResult, Transaction } from "@/db/types";
 
 interface GuestTripsListProps {
@@ -142,13 +143,36 @@ export default function GuestTripsList({ tripsPromise }: GuestTripsListProps) {
                   </TableCell>
                   <TableCell className="text-right">
                     {trip.checked_in_at ? (
-                      <div className="flex flex-col items-end">
-                        <span className="text-sm font-medium">
-                          {format(new Date(trip.checked_in_at), "MMM d, yyyy")}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {format(new Date(trip.checked_in_at), "h:mm a")}
-                        </span>
+                      <div className="flex flex-col items-end gap-2">
+                        <div className="flex flex-col items-end">
+                          <span className="text-sm font-medium">
+                            {format(new Date(trip.checked_in_at), "MMM d, yyyy")}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {format(new Date(trip.checked_in_at), "h:mm a")}
+                          </span>
+                        </div>
+                        {trip.return_photo_url && (
+                          <div className="mt-1">
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <img 
+                                  src={`/api/photo?url=${encodeURIComponent(trip.return_photo_url)}`} 
+                                  alt="Return" 
+                                  className="w-10 h-10 object-cover rounded-md border cursor-pointer hover:opacity-80 transition-opacity" 
+                                />
+                              </DialogTrigger>
+                              <DialogContent className="max-w-4xl w-full p-1 border-none bg-transparent shadow-none">
+                                <DialogTitle className="sr-only">View Photo</DialogTitle>
+                                <img 
+                                  src={`/api/photo?url=${encodeURIComponent(trip.return_photo_url)}`} 
+                                  alt="Return Full Size" 
+                                  className="w-full h-auto max-h-[85vh] object-contain rounded-lg" 
+                                />
+                              </DialogContent>
+                            </Dialog>
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <span className="text-sm font-medium text-amber-600 italic">
