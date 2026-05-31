@@ -4,8 +4,8 @@ import { connection, NextResponse } from "next/server";
 
 export async function GET(request: Request) {
   await connection;
+  const { userId, orgId } = await auth.protect();
   try {
-    const { userId, orgId } = await auth.protect();
     if (!userId || !orgId) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
